@@ -57,6 +57,12 @@ the handler's TypeScript types. A `response` schema also validates handler
 output. Omit it when the route returns a `Response` directly or does not need
 JSON response validation.
 
+Validate configuration once during startup with `defineEnv()` or
+`defineConfig()`. These boot-time helpers throw an error listing all invalid
+values and how to correct them. Runtime operations use `Result` for expected
+failures; throw `HttpError` only when converting a failure into an HTTP
+response at the route boundary.
+
 Handlers receive `req`, `url`, `requestId`, and `log` in their context, plus
 validated `params`, `query`, and `body`. Throw `HttpError` for expected HTTP
 failures; otherwise thrown errors are handled by the router's error boundary.

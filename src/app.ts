@@ -131,7 +131,9 @@ export function createApp<const Options extends AppOptionsInput>(
   shutdown?.register(() => options.drivers.close());
 
   const start = async (): Promise<void> => {
-    if (state !== "created") throw new Error(`Application cannot start while in state "${state}".`);
+    if (state !== "created") {
+      throw new Error(`Cannot start the application from state "${state}"; start it once, or create a new app instance to restart.`);
+    }
     state = "starting";
     try {
       moduleLifecycle = await startModules(modules, services);
@@ -318,7 +320,7 @@ function resolveRole(role: ServiceRole | false | undefined, env: object): Servic
 function resolvePort(port: number | undefined, env: object): number {
   const configuredPort = port ?? ("PORT" in env ? Number(env.PORT) : 3000);
   if (!Number.isInteger(configuredPort) || configuredPort < 0 || configuredPort > 65_535) {
-    throw new RangeError(`Invalid server port "${String(configuredPort)}"; provide an integer between 0 and 65535.`);
+    throw new RangeError(`Invalid server port "${String(configuredPort)}"; set PORT or server.port to an integer from 0 to 65535.`);
   }
   return configuredPort;
 }

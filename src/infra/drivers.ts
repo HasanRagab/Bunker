@@ -98,6 +98,13 @@ function createRedisDrivers(clients: RedisDriverClients): DriverBundle {
 
 async function connectRedisDrivers(url: string): Promise<DriverBundle> {
   if (!url.trim()) throw new TypeError("Redis URL must not be empty; provide a redis:// or rediss:// URL.");
+  if (!URL.canParse(url)) {
+    throw new TypeError("Invalid Redis URL; provide a complete redis:// or rediss:// URL with a host.");
+  }
+  const parsedUrl = new URL(url);
+  if ((parsedUrl.protocol !== "redis:" && parsedUrl.protocol !== "rediss:") || !parsedUrl.hostname) {
+    throw new TypeError("Invalid Redis URL; provide a redis:// or rediss:// URL with a host.");
+  }
   const { createClient } = await import("redis");
   const client = createClient({ url });
   const subscriber = createClient({ url });

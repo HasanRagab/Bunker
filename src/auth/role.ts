@@ -4,11 +4,18 @@ import type { Awaitable } from "../core/types";
 export type ServiceRole = "web" | "worker" | "all";
 export type RoleTask = () => Awaitable<void | (() => Awaitable<void>)>;
 
+/**
+ * Parse the deployment role from the environment or an explicit value.
+ * @example
+ * ```ts
+ * const role = parseRole("web");
+ * ```
+ */
 export function parseRole(value: string | undefined = Bun.env.ROLE): Result<ServiceRole, Error> {
   const role = value ?? "all";
   return role === "web" || role === "worker" || role === "all"
     ? ok(role)
-    : err(new TypeError(`Invalid ROLE "${role}"; expected web, worker, or all`));
+    : err(new TypeError(`Invalid ROLE "${role}"; set ROLE to "web", "worker", or "all".`));
 }
 
 export async function startRole(

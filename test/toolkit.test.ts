@@ -15,6 +15,8 @@ import {
   createServiceRegistry,
   defineService,
   defineModule,
+  defineEnv,
+  defineConfig,
   startModules,
   createApp,
   memoryDrivers,
@@ -46,6 +48,7 @@ import {
   parseUploads,
   rateLimit,
   Router,
+  parseRole,
   bearerAuth,
   requireRole,
   signJwt,
@@ -373,7 +376,50 @@ describe("router integrations", () => {
 });
 
 describe("shared utilities", () => {
+  it("reports all environment and configuration schema errors with correction guidance", () => {
+    let envMessage = "";
+    try {
+      defineEnv({
+        PORT: z.coerce.number().int(),
+        ROLE: z.enum(["web", "worker", "all"]),
+      }, { PORT: "not-a-number", ROLE: "api" });
+    } catch (error) {
+      if (!(error instanceof Error)) throw error;
+      envMessage = error.message;
+    }
+    expect(envMessage).toContain("Environment is invalid");
+    expect(envMessage).toContain("- PORT:");
+    expect(envMessage).toContain("- ROLE:");
+    expect(envMessage).toContain("Update each listed environment variable");
+
+    let configMessage = "";
+    try {
+      defineConfig(z.object({ port: z.coerce.number().int(), name: z.string().min(2) }), {
+        env: { port: "invalid", name: "x" },
+      });
+    } catch (error) {
+      if (!(error instanceof Error)) throw error;
+      configMessage = error.message;
+    }
+    expect(configMessage).toContain("Configuration is invalid");
+    expect(configMessage).toContain("- port:");
+    expect(configMessage).toContain("- name:");
+    expect(configMessage).toContain("Update each listed configuration value");
+
+    const role = parseRole("api");
+    expect(role.ok).toBe(false);
+    if (!role.ok) expect(role.error.message).toContain('set ROLE to "web", "worker", or "all"');
+
+    expect(() => createApp({
+      env: {},
+      drivers: memoryDrivers(),
+      modules: [],
+      server: { port: -1 },
+    })).toThrow("set PORT or server.port to an integer from 0 to 65535");
+  });
+
   it("bundles matching memory and Redis infrastructure drivers", async () => {
+    await expect(redisDrivers("https://redis.example")).rejects.toThrow("redis:// or rediss:// URL");
     const memory = memoryDrivers();
     expect(memory.kind).toBe("memory");
     const memoryEvents = memory.pubsub({ "user.created": z.object({ id: z.string() }) });

@@ -15,8 +15,12 @@ export function createScheduler(
   const tickMs = options.tickMs ?? 15_000;
   const lockTtlMs = options.lockTtlMs ?? 120_000;
   const onError = options.onError ?? ((error: Error) => console.error(error));
-  if (!Number.isFinite(tickMs) || tickMs < 1) throw new RangeError("Scheduler tick must be positive");
-  if (!Number.isFinite(lockTtlMs) || lockTtlMs < tickMs) throw new RangeError("Scheduler lock TTL must be at least one tick");
+  if (!Number.isFinite(tickMs) || tickMs < 1) {
+    throw new RangeError("Invalid scheduler tickMs; set it to at least 1 millisecond.");
+  }
+  if (!Number.isFinite(lockTtlMs) || lockTtlMs < tickMs) {
+    throw new RangeError("Invalid scheduler lockTtlMs; set it to at least tickMs.");
+  }
   let timer: ReturnType<typeof setInterval> | undefined;
 
   const add = <Payload>(cron: string, job: JobDefinition<Payload>, payload: Payload): Result<void, Error> => {
@@ -55,7 +59,7 @@ export function createScheduler(
   return {
     add,
     async start() {
-      if (timer) throw new Error("Scheduler is already running");
+      if (timer) throw new Error("Scheduler is already running; stop it before starting another run.");
       timer = setInterval(() => {
         void tick().catch((cause) => onError(cause instanceof Error ? cause : new Error(String(cause))));
       }, tickMs);
@@ -71,22 +75,28 @@ export function createScheduler(
 
 function validateCron(expression: string): void {
   const fields = expression.trim().split(/\s+/);
-  if (fields.length !== 5) throw new Error("Cron expression must have five fields");
+  if (fields.length !== 5) {
+    throw new Error("Invalid cron expression; provide five fields: minute hour day-of-month month day-of-week.");
+  }
   fields.forEach((field, index) => {
     for (const part of field.split(",")) {
       const [range = "", stepValue] = part.split("/");
       const step = stepValue === undefined ? 1 : Number(stepValue);
-      if (!Number.isInteger(step) || step < 1) throw new Error(`Invalid cron step: ${part}`);
+      if (!Number.isInteger(step) || step < 1) {
+        throw new Error(`Invalid cron step in "${part}"; set the step after "/" to a positive integer.`);
+      }
       const bounds = cronRanges[index];
-      if (!bounds) throw new Error("Invalid cron field");
+      if (!bounds) throw new Error(`Invalid cron field at position ${index + 1}; provide a standard five-field expression.`);
       const [min, max] = bounds;
       const match = range === "*" || /^\d+$/.test(range) || /^\d+-\d+$/.test(range);
-      if (!match) throw new Error(`Unsupported cron field: ${part}`);
+      if (!match) {
+        throw new Error(`Unsupported cron field "${part}"; use *, a number, a range, a comma-separated list, or /step.`);
+      }
       const [startText, endText] = range === "*" ? [String(min), String(max)] : range.split("-");
       const start = Number(startText);
       const end = endText === undefined ? (stepValue === undefined ? start : max) : Number(endText);
       if (!Number.isInteger(start) || !Number.isInteger(end) || start < min || end > max || start > end) {
-        throw new Error(`Cron field out of range: ${part}`);
+        throw new Error(`Cron field "${part}" is out of range; values in field ${index + 1} must be ${min}-${max}.`);
       }
     }
   });

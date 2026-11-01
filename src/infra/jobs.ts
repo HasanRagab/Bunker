@@ -95,18 +95,22 @@ export function defineJob<Payload>(
     backoff?: boolean | { factor?: number; maxDelayMs?: number };
   } = {},
 ): JobDefinition<Payload> {
-  if (!name.trim()) throw new TypeError("Job name must not be empty");
+  if (!name.trim()) throw new TypeError("Job name must not be empty; provide a descriptive job name.");
   const maxAttempts = options.maxAttempts ?? 3;
   const retryDelayMs = options.retryDelayMs ?? 1_000;
   const backoff = options.backoff === true ? {} : options.backoff || undefined;
   const retryBackoff = backoff
     ? { factor: backoff.factor ?? 2, maxDelayMs: backoff.maxDelayMs ?? 60_000 }
     : undefined;
-  if (!Number.isInteger(maxAttempts) || maxAttempts < 1) throw new RangeError("maxAttempts must be a positive integer");
-  if (!Number.isFinite(retryDelayMs) || retryDelayMs < 0) throw new RangeError("retryDelayMs must be non-negative");
+  if (!Number.isInteger(maxAttempts) || maxAttempts < 1) {
+    throw new RangeError("Invalid maxAttempts; set it to a positive integer.");
+  }
+  if (!Number.isFinite(retryDelayMs) || retryDelayMs < 0) {
+    throw new RangeError("Invalid retryDelayMs; set it to a finite non-negative number of milliseconds.");
+  }
   if (retryBackoff && (!Number.isFinite(retryBackoff.factor) || retryBackoff.factor < 1 ||
     !Number.isFinite(retryBackoff.maxDelayMs) || retryBackoff.maxDelayMs < 0)) {
-    throw new RangeError("Exponential backoff factor must be at least one and maxDelayMs must be non-negative");
+    throw new RangeError("Invalid exponential backoff; set factor to at least 1 and maxDelayMs to a finite non-negative value.");
   }
   return {
     name,
@@ -135,8 +139,12 @@ export function createQueue(
 ) {
   const { pollMs = 250, visibilityTimeoutMs = 30_000, onDeadLetter, logger = createLogger() } = options;
   const onError = options.onError ?? ((error: Error, job: QueuedJob) => logger.error("Background job failed", { error, jobId: job.id, jobName: job.name }));
-  if (!Number.isFinite(pollMs) || pollMs < 1) throw new RangeError("Queue poll interval must be positive");
-  if (!Number.isFinite(visibilityTimeoutMs) || visibilityTimeoutMs < 1) throw new RangeError("Queue visibility timeout must be positive");
+  if (!Number.isFinite(pollMs) || pollMs < 1) {
+    throw new RangeError("Invalid queue pollMs; set it to at least 1 millisecond.");
+  }
+  if (!Number.isFinite(visibilityTimeoutMs) || visibilityTimeoutMs < 1) {
+    throw new RangeError("Invalid queue visibilityTimeoutMs; set it to at least 1 millisecond.");
+  }
   let running = false;
   let worker: Promise<void> | undefined;
 
@@ -149,7 +157,9 @@ export function createQueue(
       const parsed = definition.schema.safeParse(input);
       if (!parsed.success) return err(parsed.error);
       const delayMs = options.delayMs ?? 0;
-      if (!Number.isFinite(delayMs) || delayMs < 0) return err(new RangeError("Job delay must be non-negative"));
+      if (!Number.isFinite(delayMs) || delayMs < 0) {
+        return err(new RangeError("Invalid job delayMs; set it to a finite non-negative number of milliseconds."));
+      }
       const id = crypto.randomUUID();
       try {
         await store.enqueue({
@@ -169,7 +179,7 @@ export function createQueue(
       }
     },
     start(definitions: readonly { readonly name: string; readonly run: (payload: unknown, context: JobContext) => Promise<void> }[]): { stop: () => Promise<void> } {
-      if (running) throw new Error("Queue worker is already running");
+      if (running) throw new Error("Queue worker is already running; stop the current worker before starting another.");
       const handlers = new Map(definitions.map((definition) => [definition.name, definition]));
       running = true;
       worker = (async () => {
