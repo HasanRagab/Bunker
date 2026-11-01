@@ -1,10 +1,10 @@
 import { err, ok, type Result } from "../core/result";
+import type { z } from "zod";
 
 export interface CacheStore {
   get(key: string): Promise<string | null>;
   set(key: string, value: string, ttlMs: number): Promise<void>;
   delete(key: string): Promise<void>;
-  del(key: string): Promise<void>;
   setIfAbsent(key: string, value: string, ttlMs: number): Promise<boolean>;
   increment(key: string, ttlMs: number): Promise<number>;
   compareAndSet(key: string, expected: string, value: string, ttlMs: number): Promise<boolean>;
@@ -30,10 +30,6 @@ export class MemoryCacheStore implements CacheStore {
 
   async delete(key: string): Promise<void> {
     this.#entries.delete(key);
-  }
-
-  async del(key: string): Promise<void> {
-    await this.delete(key);
   }
 
   async setIfAbsent(key: string, value: string, ttlMs: number): Promise<boolean> {
@@ -98,25 +94,94 @@ export function createCache(store: CacheStore) {
         return err(asError(cause));
       }
     },
-    async wrap<T>(key: string, ttlMs: number, fn: () => T | Promise<T>): Promise<Result<T, Error>> {
+    /**
+     * Load and cache a value, optionally validating it and preventing stampedes.
+     * @example
+     * ```ts
+     * const user = await cache.wrap("user:1", 60_000, () => loadUser(), {
+     *   schema: z.object({ id: z.string() }),
+     *   stampede: true,
+     * });
+     * ```
+     */
+    async wrap<T>(
+      key: string,
+      ttlMs: number,
+      fn: () => T | Promise<T>,
+      options: {
+        schema?: z.ZodType<T>;
+        stampede?: boolean | { lockTtlMs?: number; waitMs?: number; pollMs?: number };
+      } = {},
+    ): Promise<Result<T, Error>> {
       if (!Number.isFinite(ttlMs) || ttlMs < 0) return err(new RangeError("Cache TTL must be a non-negative finite number"));
-      const cached = await store.get(key).catch((cause) => cause);
-      if (cached instanceof Error) return err(cached);
-      if (cached !== null) {
+      const stampede = options.stampede === true ? {} : options.stampede || undefined;
+      const lockTtlMs = stampede?.lockTtlMs ?? 30_000;
+      const waitMs = stampede?.waitMs ?? 5_000;
+      const pollMs = stampede?.pollMs ?? 25;
+      if (stampede && (!Number.isFinite(lockTtlMs) || lockTtlMs <= 0 ||
+        !Number.isFinite(waitMs) || waitMs < 0 ||
+        !Number.isFinite(pollMs) || pollMs < 1)) {
+        return err(new RangeError("Stampede lock TTL and poll interval must be positive; wait time must be non-negative"));
+      }
+      const readCached = async (): Promise<Result<T | null, Error>> => {
         try {
-          return ok(JSON.parse(cached) as T);
+          const serialized = await store.get(key);
+          if (serialized === null) return ok(null);
+          const parsed: unknown = JSON.parse(serialized);
+          if (!options.schema) return ok(parsed as T);
+          const validated = options.schema.safeParse(parsed);
+          return validated.success ? ok(validated.data) : err(validated.error);
         } catch (cause) {
           return err(asError(cause));
         }
+      };
+      let lockToken: string | undefined;
+      if (stampede) {
+        const lockKey = `${key}:__bunker_stampede`;
+        const token = crypto.randomUUID();
+        const deadline = Date.now() + waitMs;
+        while (true) {
+          const cached = await readCached();
+          if (!cached.ok) return cached;
+          if (cached.value !== null) return ok(cached.value);
+          try {
+            if (await store.setIfAbsent(lockKey, token, lockTtlMs)) {
+              lockToken = token;
+              break;
+            }
+          } catch (cause) {
+            return err(asError(cause));
+          }
+          if (Date.now() >= deadline) {
+            return err(new Error(`Timed out waiting for cache stampede lock for key: ${key}`));
+          }
+          await Bun.sleep(Math.min(pollMs, Math.max(1, deadline - Date.now())));
+        }
+      } else {
+        const cached = await readCached();
+        if (!cached.ok) return cached;
+        if (cached.value !== null) return ok(cached.value);
       }
       try {
         const value = await fn();
+        if (options.schema) {
+          const validated = options.schema.safeParse(value);
+          if (!validated.success) return err(validated.error);
+        }
         const serialized = JSON.stringify(value);
         if (serialized === undefined) throw new TypeError("Cache values must be JSON serializable");
         await store.set(key, serialized, ttlMs);
         return ok(value);
       } catch (cause) {
         return err(asError(cause));
+      } finally {
+        if (lockToken) {
+          try {
+            await store.compareAndDelete(`${key}:__bunker_stampede`, lockToken);
+          } catch (cause) {
+            throw asError(cause);
+          }
+        }
       }
     },
   };

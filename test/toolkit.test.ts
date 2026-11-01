@@ -184,6 +184,11 @@ describe("router integrations", () => {
     expect(await response.json()).toEqual({ id: "a", active: true });
   });
 
+  it("returns 400 for malformed path parameter encoding", async () => {
+    const response = await createTestApp(api).req.get("/api/users/%E0%A4%A?active=true");
+    expect(response.status).toBe(400);
+  });
+
   it("infers client route inputs and validates responses", async () => {
     const client = createClient("http://localhost", api, {
       fetcher: (input, init) => api.fetch(new Request(String(input), init)),
@@ -244,6 +249,30 @@ describe("shared utilities", () => {
     expect(result).toEqual({ ok: true, value: { value: 1 } });
     const cached = await cache.wrap("key", 1000, () => ({ value: 2 }));
     expect(cached).toEqual({ ok: true, value: { value: 1 } });
+  });
+
+  it("validates cache values and coalesces concurrent cache misses", async () => {
+    const store = new MemoryCacheStore();
+    const cache = createCache(store);
+    const schema = z.object({ value: z.number() });
+    let loads = 0;
+    const load = () => {
+      loads++;
+      return Bun.sleep(10).then(() => ({ value: 42 }));
+    };
+    const results = await Promise.all([
+      cache.wrap("validated", 1_000, load, { schema, stampede: true }),
+      cache.wrap("validated", 1_000, load, { schema, stampede: true }),
+    ]);
+    expect(results).toEqual([
+      { ok: true, value: { value: 42 } },
+      { ok: true, value: { value: 42 } },
+    ]);
+    expect(loads).toBe(1);
+
+    await store.set("invalid", JSON.stringify({ value: "not a number" }), 1_000);
+    const invalid = await cache.wrap("invalid", 1_000, () => ({ value: 1 }), { schema });
+    expect(invalid.ok).toBe(false);
   });
 
   it("paginates arrays with opaque cursors", () => {

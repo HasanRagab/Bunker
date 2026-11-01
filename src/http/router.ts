@@ -213,7 +213,13 @@ function match(pattern: string[], actual: string[]): Record<string, string> | nu
   for (let i = 0; i < pattern.length; i++) {
     const p = pattern[i]!;
     const a = actual[i]!;
-    if (p.startsWith(":")) params[p.slice(1)] = decodeURIComponent(a);
+    if (p.startsWith(":")) {
+      try {
+        params[p.slice(1)] = decodeURIComponent(a);
+      } catch {
+        throw HttpError.badRequest("Invalid path parameter encoding");
+      }
+    }
     else if (p !== a) return null;
   }
   return params;
