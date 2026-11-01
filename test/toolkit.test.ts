@@ -16,6 +16,8 @@ import {
   defineService,
   defineModule,
   startModules,
+  memoryDrivers,
+  redisDrivers,
   defineJob,
   healthRoutes,
   MemoryCacheStore,
@@ -298,6 +300,33 @@ describe("router integrations", () => {
 });
 
 describe("shared utilities", () => {
+  it("bundles matching memory and Redis infrastructure drivers", async () => {
+    const memory = memoryDrivers();
+    expect(memory.kind).toBe("memory");
+    const memoryEvents = memory.pubsub({ "user.created": z.object({ id: z.string() }) });
+    const memoryMessages: string[] = [];
+    await memoryEvents.subscribe("user.created", ({ id }) => { memoryMessages.push(id); });
+    await memoryEvents.publish("user.created", { id: "memory-user" });
+    expect(memoryMessages).toEqual(["memory-user"]);
+    await memory.close();
+
+    const redisClient = new SharedFakeRedis();
+    const redis = redisDrivers({ client: redisClient, publisher: redisClient, subscriber: redisClient });
+    expect(redis.kind).toBe("redis");
+    const cache = createCache(redis.cache);
+    expect((await cache.set("bundle-key", { value: 1 }, 1_000)).ok).toBe(true);
+    expect((await cache.get("bundle-key", z.object({ value: z.number() }))).ok).toBe(true);
+    const lease = await redis.lock.acquire("bundle-lock", 1_000);
+    expect(lease).not.toBeNull();
+    await lease?.release();
+    const redisEvents = redis.pubsub({ "user.created": z.object({ id: z.string() }) });
+    const redisMessages: string[] = [];
+    await redisEvents.subscribe("user.created", ({ id }) => { redisMessages.push(id); });
+    await redisEvents.publish("user.created", { id: "redis-user" });
+    expect(redisMessages).toEqual(["redis-user"]);
+    await redis.close();
+  });
+
   it("resolves typed services and clears registrations", () => {
     interface UserRepository {
       find(id: string): Promise<{ id: string } | null>;
