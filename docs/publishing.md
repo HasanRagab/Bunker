@@ -1,7 +1,7 @@
 # Build and publish
 
 This repository is prepared to publish the public npm package
-[`@hasanragab/bunker`](https://www.npmjs.com/package/@hasanragab/bunker). The
+[`@2hasan2/bunker`](https://www.npmjs.com/package/@2hasan2/bunker). The
 package targets Bun because APIs such as `bun:sqlite`, `Bun.serve`, and
 `Bun.password` are part of its public runtime surface.
 
@@ -29,7 +29,7 @@ build, and this package-content check for each pull request to `main` or
 
 ## First publish setup
 
-1. Confirm your npm account owns or can publish under the `@hasanragab` scope.
+1. Confirm your npm account `2hasan2` owns or can publish under the `@2hasan2` scope.
 2. Authenticate locally with `npm login`.
 3. Check that `npm whoami` reports the account with publish permission.
 
@@ -75,7 +75,7 @@ git push --tags
 ```
 
 If publishing fails, check whether the version reached npm with
-`npm view @hasanragab/bunker version`. If it was not published, you can fix the
+`npm view @2hasan2/bunker version`. If it was not published, you can fix the
 problem and retry that version. If it is already listed, increment to a new
 version; npm does not allow replacing a published version.
 

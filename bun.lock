@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@hasanragab/bunker",
+      "name": "@2hasan2/bunker",
       "dependencies": {
         "drizzle-orm": "^0.45.4",
         "drizzle-zod": "^0.8.3",

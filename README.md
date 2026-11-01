@@ -24,12 +24,12 @@ The [documentation home](./docs/README.md) lists guides and runnable examples.
 After the initial npm release, install the package in a Bun application:
 
 ```sh
-bun add @hasanragab/bunker
+bun add @2hasan2/bunker
 ```
 
 ```ts
 import { z } from "zod";
-import { Router, serve } from "@hasanragab/bunker";
+import { Router, serve } from "@2hasan2/bunker";
 
 const api = Router.create().get("/hello/:name", {
   response: z.object({ message: z.string() }),
