@@ -18,6 +18,8 @@ import type { z } from "zod";
 
 type ShutdownOptions = Parameters<typeof createShutdown>[0];
 type CorsOptions = Parameters<typeof withCors>[1];
+type FetchHandler = (request: Request) => Promise<Response>;
+type FetchWrapper = (handler: FetchHandler) => FetchHandler;
 type ServiceRegistry = ReturnType<typeof createServiceRegistry>;
 type AppJob = {
   readonly name: string;
@@ -60,7 +62,7 @@ type AppInstance<Modules extends ModuleList, Env extends object> = {
 
 /**
  * Compose the toolkit's HTTP, infrastructure, and operations helpers into an application. Pass
- * the validated result of `defineEnv` as `env`.
+ * the validated result of `defineEnv` as `env`; use `wrapFetch` for cross-cutting fetch adapters.
  * @example
  * ```ts
  * import { z } from "zod";
@@ -119,7 +121,7 @@ export function createApp<const Options extends AppOptionsInput>(
   let server: Bun.Server<unknown> | undefined;
   let unregisterSignals: (() => void) | undefined;
 
-  let fetch = router.fetch;
+  let fetch = options.wrapFetch?.(router.fetch) ?? router.fetch;
   if (metrics) fetch = metrics.wrap(fetch);
   if (options.cors !== undefined && options.cors !== false) fetch = withCors(fetch, options.cors);
   if (shutdown) fetch = shutdown.wrap(fetch);
@@ -268,6 +270,7 @@ type AppOptions = {
   readonly cors?: false | CorsOptions;
   readonly logger?: Logger;
   readonly instanceId?: string;
+  readonly wrapFetch?: FetchWrapper;
   readonly server?: { port?: number; reusePort?: boolean };
 };
 type AppOptionsInput = AppOptions & { readonly modules: readonly unknown[] };

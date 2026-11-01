@@ -244,11 +244,18 @@ describe("router integrations", () => {
           handler: ({ params }) => repository.find(params.id),
         }),
     });
+    const appModules = [users, repositoryModule] as const;
+    const wrapFetch = (handler: (request: Request) => Promise<Response>) => async (request: Request) => {
+      const response = await handler(request);
+      response.headers.set("x-app-wrapper", "active");
+      return response;
+    };
     const app = createApp({
       env: { PORT: 0 },
       drivers: memoryDrivers(),
-      modules: [users, repositoryModule],
+      modules: appModules,
       role: false,
+      wrapFetch,
     });
     type AppRoutes = typeof app.router extends Router<infer _Context, infer Routes, infer _Prefix> ? Routes : never;
     expectTypeOf<AppRoutes["GET /api/users/:id"]["path"]>().toEqualTypeOf<"/api/users/:id">();
@@ -263,6 +270,7 @@ describe("router integrations", () => {
     const response = await client.request("GET", "/api/users/:id", { params: { id: "app-user" } });
     expect(response.ok && response.value).toEqual({ id: "app-user" });
     expect((await app.fetch(new Request("http://localhost/health"))).status).toBe(200);
+    expect((await app.fetch(new Request("http://localhost/health"))).headers.get("x-app-wrapper")).toBe("active");
     expect((await app.fetch(new Request("http://localhost/metrics"))).headers.get("content-type")).toContain("text/plain");
     expect((await app.fetch(new Request("http://localhost/health"))).headers.get("access-control-allow-origin")).toBeNull();
     await app.stop();

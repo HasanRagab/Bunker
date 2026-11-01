@@ -1,28 +1,24 @@
 import { z } from "zod";
 import {
+  bearerAuth,
+  createApp,
   createCache,
+  createLogger,
   createQueue,
-  createRedisPubSub,
-  createRequestMetrics,
   createScheduler,
-  createShutdown,
+  defineEnv,
   defineJob,
-  healthRoutes,
-  metricsRoute,
+  defineModule,
+  err,
   parseRole,
   rateLimit,
-  RedisCacheStore,
-  RedisLock,
-  RedisQueueStore,
-  RedisRateLimitStore,
-  Router,
-  serve,
-  startRole,
-  bearerAuth,
-  defineEnv,
+  redisDrivers,
   verifyJwt,
   withIdempotency,
+  ok,
   type RedisClient,
+  type Result,
+  type ServiceRole,
 } from "../src";
 
 const ReportRequested = z.object({ reportId: z.string().min(1) });
@@ -32,153 +28,120 @@ const eventSchemas = { "report.completed": ReportCompleted };
 const env = defineEnv({
   JWT_SECRET: z.string().min(32),
   PORT: z.coerce.number().default(3000),
+  ROLE: z.enum(["web", "worker", "all"]).default("all"),
 });
 
+/**
+ * Start the Redis-backed report service in web, worker, or combined role.
+ * @example
+ * ```ts
+ * const service = await startScalingExample(redisClient, subscriberClient, {
+ *   closeRedis: async () => redisClient.quit(),
+ * });
+ * ```
+ */
 export async function startScalingExample(
   redis: RedisClient,
   subscriber: RedisClient,
   options: { port?: number; closeRedis: () => Promise<void> },
 ) {
   const { port = env.PORT, closeRedis } = options;
-  const roleResult = parseRole();
+  const roleResult = parseRole(env.ROLE);
   if (!roleResult.ok) throw roleResult.error;
-  const role = roleResult.value;
+  const role: ServiceRole = roleResult.value;
+  const instanceId = crypto.randomUUID();
+  const logger = createLogger({ instanceId });
+  const drivers = redisDrivers({ client: redis, publisher: redis, subscriber, close: closeRedis });
+  const queue = createQueue(drivers.queue, { logger, visibilityTimeoutMs: 30_000 });
+  const scheduler = createScheduler(queue, drivers.lock, { lockTtlMs: 120_000 });
+  const events = drivers.pubsub(eventSchemas, logger);
+  const cache = createCache(drivers.cache);
+  const generateReport = defineJob("generate-report", ReportRequested, async ({ reportId }, context) => {
+    logger.info("Generating report", { reportId, requestId: context.requestId, attempt: context.attempt });
+    await events.publish("report.completed", { reportId, completedAt: new Date().toISOString() });
+  }, { maxAttempts: 5, retryDelayMs: 2_000 });
+  const scheduled = scheduler.add("*/5 * * * *", generateReport, { reportId: "scheduled-summary" });
+  if (!scheduled.ok) throw scheduled.error;
 
-  const metrics = createRequestMetrics();
-  const cacheStore = new RedisCacheStore(redis);
-  const queueStore = new RedisQueueStore(redis);
-  const queue = createQueue(queueStore, {
-    visibilityTimeoutMs: 30_000,
-    onError: (error, job) => console.error("Job failed", { error, jobId: job.id, requestId: job.requestId }),
-  });
-  const locks = new RedisLock(redis);
-  const scheduler = createScheduler(queue, locks, { lockTtlMs: 120_000 });
-  const events = createRedisPubSub(redis, subscriber, eventSchemas);
-
-  const generateReport = defineJob(
-    "generate-report",
-    ReportRequested,
-    async ({ reportId }, context) => {
-      console.info("Generating report", {
-        reportId,
-        instanceId: metrics.instanceId,
-        requestId: context.requestId,
-        attempt: context.attempt,
-      });
-      await events.publish("report.completed", { reportId, completedAt: new Date().toISOString() });
+  let unsubscribe: (() => Promise<void>) | undefined;
+  const reports = defineModule({
+    name: "reports",
+    jobs: [generateReport],
+    events: eventSchemas,
+    routes: (router) => router
+      .use(bearerAuth(async (token) => {
+        const verified = await verifyJwt(token, env.JWT_SECRET, User);
+        return verified.ok ? verified.value : null;
+      }))
+      .use(rateLimit({ limit: 120, windowMs: 60_000, store: drivers.rateLimit, key: ({ user }) => user.id }))
+      .post("/reports", {
+        body: ReportRequested,
+        handler: async ({ body, requestId }) => {
+          const result = await queue.enqueue(generateReport, body, { requestId });
+          if (!result.ok) throw result.error;
+          return Response.json({ jobId: result.value }, { status: 202 });
+        },
+      }),
+    onStart: async () => {
+      await scheduler.start();
+      if (role === "worker") return;
+      try {
+        unsubscribe = await events.subscribe("report.completed", (event) => {
+          logger.info("Report completed on a service instance", { ...event, instanceId });
+        });
+      } catch (error) {
+        scheduler.stop();
+        throw error;
+      }
     },
-    { maxAttempts: 5, retryDelayMs: 2_000 },
-  );
-  const schedule = scheduler.add("*/5 * * * *", generateReport, { reportId: "scheduled-summary" });
-  if (!schedule.ok) throw schedule.error;
-
-  const shutdown = createShutdown({
-    timeoutMs: 25_000,
-    onSignal: (signal) => console.info("Draining service", { signal, instanceId: metrics.instanceId }),
-    onError: (error) => console.error("Shutdown failed", error),
-  });
-  shutdown.register(closeRedis);
-
-  const api = Router.create();
-
-  healthRoutes(api, {
-    checks: {
-      redis: async () => {
-        await redis.get("bunker:health");
-        return true;
-      },
-    },
-    isDraining: () => shutdown.isDraining,
-  });
-
-  const limitedApi = api
-    .use(bearerAuth(async (token) => {
-      const verified = await verifyJwt(token, env.JWT_SECRET, User);
-      return verified.ok ? verified.value : null;
-    }))
-    .use(rateLimit({
-      limit: 120,
-      windowMs: 60_000,
-      store: new RedisRateLimitStore(redis),
-      key: ({ user }) => user.id,
-    }));
-
-  limitedApi.post("/reports", {
-    body: ReportRequested,
-    handler: async ({ body, requestId }) => {
-      const result = await queue.enqueue(generateReport, body, { requestId });
-      if (!result.ok) throw result.error;
-      return Response.json({ jobId: result.value }, { status: 202 });
+    onStop: async () => {
+      await unsubscribe?.();
+      scheduler.stop();
     },
   });
-
-  metricsRoute(api, metrics);
-  const cache = createCache(cacheStore);
-  const fetch = metrics.wrap(shutdown.wrap(withIdempotency(api.fetch, cacheStore, {
+  const modules = [reports] as const;
+  const wrapFetch = (fetch: (request: Request) => Promise<Response>) => withIdempotency(fetch, drivers.idempotency, {
     scope: async (request) => {
       const token = request.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1];
       if (!token) return "anonymous";
       const verified = await verifyJwt(token, env.JWT_SECRET, User);
       return verified.ok ? `user:${verified.value.id}` : `invalid-token:${token}`;
     },
-  })));
-  let schedulerStarted = false;
-  const startScheduler = async () => {
-    if (!schedulerStarted) {
-      await scheduler.start();
-      schedulerStarted = true;
-    }
-    return () => {
-      if (!schedulerStarted) return;
-      scheduler.stop();
-      schedulerStarted = false;
-    };
-  };
+  });
 
-  let stopRole: () => Promise<void>;
+  const app = createApp({
+    env: { ...env, PORT: port },
+    drivers,
+    modules,
+    role,
+    instanceId,
+    server: { reusePort: true },
+    health: { checks: { redis: () => redis.get("bunker:health").then(() => true) } },
+    shutdown: {
+      timeoutMs: 25_000,
+      onSignal: (signal: string) => logger.info("Draining service", { signal, instanceId }),
+      onError: (error: Error) => logger.error("Shutdown failed", { error }),
+    },
+    wrapFetch,
+  });
+
   try {
-    stopRole = await startRole(role, {
-      web: async () => {
-        const stopScheduler = await startScheduler();
-        let unsubscribe: () => Promise<void> = async () => {};
-        let server: ReturnType<typeof serve> | undefined;
-        try {
-          unsubscribe = await events.subscribe("report.completed", (event) => {
-            console.info("Report completed on a service instance", { ...event, instanceId: metrics.instanceId });
-          });
-          server = serve(fetch, { port, reusePort: true });
-          shutdown.attachServer(server);
-          return async () => {
-            await unsubscribe();
-            stopScheduler();
-          };
-        } catch (cause) {
-          await unsubscribe();
-          stopScheduler();
-          server?.stop(true);
-          throw cause;
-        }
-      },
-      worker: async () => {
-        const stopScheduler = await startScheduler();
-        const worker = queue.start([generateReport]);
-        return async () => {
-          await worker.stop();
-          stopScheduler();
-        };
-      },
-    });
+    await app.start();
   } catch (cause) {
-    await shutdown.shutdown("startup-failure");
+    await app.stop();
     throw cause;
   }
-  shutdown.registerStop(stopRole);
-  shutdown.installSignals();
-
   return {
     role,
-    shutdown: () => shutdown.shutdown(),
     cache,
     events,
+    shutdown: async (): Promise<Result<void, Error>> => {
+      try {
+        await app.stop();
+        return ok(undefined);
+      } catch (cause) {
+        return err(cause instanceof Error ? cause : new Error(String(cause)));
+      }
+    },
   };
 }
