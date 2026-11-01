@@ -229,9 +229,23 @@ export function createTestApp<
   Routes extends RouteMap,
   Prefix extends string,
 >(router: Router<Ctx, Routes, Prefix>, baseUrl?: string): TestRequestHelpers;
+/**
+ * Create a memory-backed test application from typed route modules.
+ * @example
+ * ```ts
+ * const testApp = await createTestApp({ modules: [usersModule] });
+ * ```
+ */
 export function createTestApp<const Options extends TestAppOptionsInput>(
   options: Options & (Options["modules"] extends ModuleList ? unknown : never),
 ): Promise<TestAppInstance<Options>>;
+/**
+ * Implement both synchronous router and asynchronous module test helpers.
+ * @example
+ * ```ts
+ * const testApp = createTestApp(router);
+ * ```
+ */
 export function createTestApp(
   input: Router<BaseCtx, RouteMap, string> | TestAppOptionsInput,
   baseUrl?: string,

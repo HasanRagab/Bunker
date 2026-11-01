@@ -3,6 +3,13 @@ import type { Router } from "./router";
 type OpenApiRouter = Router<any, any, any>;
 
 /** Fetch-compatible OpenAPI JSON and an in-browser documentation page. */
+/**
+ * Serve a generated OpenAPI document and a compact documentation page.
+ * @example
+ * ```ts
+ * const docs = openAPIDocs(api, { title: "Users", version: "1.0.0" });
+ * ```
+ */
 export function openAPIDocs(
   router: OpenApiRouter,
   options: { title?: string; version?: string; specPath?: string; docsPath?: string } = {},

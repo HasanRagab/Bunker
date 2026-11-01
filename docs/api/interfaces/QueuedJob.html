@@ -10,9 +10,18 @@
 <ul class="tsd-breadcrumb" aria-label="Breadcrumb">
 <li><a href="" aria-current="page">QueuedJob</a></li></ul>
 <h1>Interface QueuedJob</h1></div>
+<section class="tsd-panel tsd-comment">
+<div class="tsd-comment tsd-typography"><p>Serialized job stored by a queue adapter.</p>
+</div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">job</span><span class="hl-1">: </span><span class="hl-6">QueuedJob</span><span class="hl-1"> = { </span><span class="hl-5">id:</span><span class="hl-1"> </span><span class="hl-4">&quot;1&quot;</span><span class="hl-1">, </span><span class="hl-5">name:</span><span class="hl-1"> </span><span class="hl-4">&quot;cleanup&quot;</span><span class="hl-1">, </span><span class="hl-5">payload:</span><span class="hl-1"> {}, </span><span class="hl-5">attempts:</span><span class="hl-1"> </span><span class="hl-9">0</span><span class="hl-1">, </span><span class="hl-5">maxAttempts:</span><span class="hl-1"> </span><span class="hl-9">3</span><span class="hl-1">, </span><span class="hl-5">retryDelayMs:</span><span class="hl-1"> </span><span class="hl-9">1_000</span><span class="hl-1">, </span><span class="hl-5">runAt:</span><span class="hl-1"> </span><span class="hl-5">Date</span><span class="hl-1">.</span><span class="hl-3">now</span><span class="hl-1">() };</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div></section>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">QueuedJob</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#attempts">attempts</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#backoff">backoff</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">factor</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">maxDelayMs</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#id">id</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxattempts">maxAttempts</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#name">name</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#payload">payload</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#requestid">requestId</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#retrydelayms">retryDelayMs</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#runat">runAt</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/jobs.ts#L5">src/infra/jobs.ts:5</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/jobs.ts#L11">src/infra/jobs.ts:11</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -37,47 +46,47 @@
 <h3 class="tsd-anchor-link" id="attempts"><code class="tsd-tag">Readonly</code><span>attempts</span><a href="#attempts" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">attempts</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/jobs.ts#L9">src/infra/jobs.ts:9</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/jobs.ts#L15">src/infra/jobs.ts:15</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="backoff"><code class="tsd-tag">Optional</code> <code class="tsd-tag">Readonly</code><span>backoff</span><a href="#backoff" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">backoff</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">factor</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">maxDelayMs</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span> <span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/jobs.ts#L12">src/infra/jobs.ts:12</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/jobs.ts#L18">src/infra/jobs.ts:18</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="id"><code class="tsd-tag">Readonly</code><span>id</span><a href="#id" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">id</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/jobs.ts#L6">src/infra/jobs.ts:6</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/jobs.ts#L12">src/infra/jobs.ts:12</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="maxattempts"><code class="tsd-tag">Readonly</code><span>max<wbr/>Attempts</span><a href="#maxattempts" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxAttempts</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/jobs.ts#L10">src/infra/jobs.ts:10</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/jobs.ts#L16">src/infra/jobs.ts:16</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="name"><code class="tsd-tag">Readonly</code><span>name</span><a href="#name" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">name</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/jobs.ts#L7">src/infra/jobs.ts:7</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/jobs.ts#L13">src/infra/jobs.ts:13</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="payload"><code class="tsd-tag">Readonly</code><span>payload</span><a href="#payload" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">payload</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">unknown</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/jobs.ts#L8">src/infra/jobs.ts:8</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/jobs.ts#L14">src/infra/jobs.ts:14</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="requestid"><code class="tsd-tag">Optional</code> <code class="tsd-tag">Readonly</code><span>request<wbr/>Id</span><a href="#requestid" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">requestId</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/jobs.ts#L14">src/infra/jobs.ts:14</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/jobs.ts#L20">src/infra/jobs.ts:20</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="retrydelayms"><code class="tsd-tag">Readonly</code><span>retry<wbr/>Delay<wbr/>Ms</span><a href="#retrydelayms" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">retryDelayMs</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/jobs.ts#L11">src/infra/jobs.ts:11</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/jobs.ts#L17">src/infra/jobs.ts:17</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="runat"><code class="tsd-tag">Readonly</code><span>run<wbr/>At</span><a href="#runat" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">runAt</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/jobs.ts#L13">src/infra/jobs.ts:13</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/jobs.ts#L19">src/infra/jobs.ts:19</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

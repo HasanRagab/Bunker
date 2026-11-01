@@ -1,8 +1,21 @@
 import type { Router, BaseCtx, RouteMap } from "../http/router";
 import type { Awaitable } from "../core/types";
 
+/** Readiness check that may return false or throw to report an unhealthy dependency.
+ * @example
+ * ```ts
+ * const databaseCheck: HealthCheck = async () => database.ping();
+ * ```
+ */
 export type HealthCheck = () => Awaitable<void | boolean>;
 
+/**
+ * Register liveness and readiness routes with optional dependency checks.
+ * @example
+ * ```ts
+ * healthRoutes(router, { checks: { database: () => true } });
+ * ```
+ */
 export function healthRoutes<C extends BaseCtx, Routes extends RouteMap, Prefix extends string>(
   router: Router<C, Routes, Prefix>,
   options: { checks?: Record<string, HealthCheck>; healthPath?: string; readyPath?: string; isDraining?: () => boolean } = {},

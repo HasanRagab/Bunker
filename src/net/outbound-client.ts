@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { err, ok, type Result } from "../core/result";
 
+/**
+ * Failure returned by the outbound HTTP client.
+ * @example
+ * ```ts
+ * const failure: HttpClientError = { message: "Service unavailable", status: 503 };
+ * ```
+ */
 export interface HttpClientError {
   readonly message: string;
   readonly status?: number;
@@ -9,6 +16,13 @@ export interface HttpClientError {
 
 type Fetcher = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
+/**
+ * Create a fetch client with timeouts, safe retries, and Zod response validation.
+ * @example
+ * ```ts
+ * const client = createHttpClient({ timeoutMs: 2_000, retries: 1 });
+ * ```
+ */
 export function createHttpClient(options: {
   timeoutMs?: number;
   retries?: number;

@@ -5,7 +5,20 @@ import type { Awaitable } from "../core/types";
 
 /* ---------- Types ---------- */
 
+/** HTTP methods supported by typed route registration.
+ * @example
+ * ```ts
+ * const method: Method = "GET";
+ * ```
+ */
 export type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+
+/** Route schemas and literal path used by typed clients.
+ * @example
+ * ```ts
+ * type UserRoute = RouteContract<"GET", "/users/:id">;
+ * ```
+ */
 export type RouteContract<
   M extends Method = Method,
   P extends string = string,
@@ -13,8 +26,20 @@ export type RouteContract<
   B extends Schema = Schema,
   R extends Schema = Schema,
 > = { readonly method: M; readonly path: P; readonly query: Q; readonly body: B; readonly response: R };
+/** Aggregate map of routes registered on a router chain.
+ * @example
+ * ```ts
+ * const routes: RouteMap = {};
+ * ```
+ */
 export type RouteMap = object;
 
+/** Base data available to every route handler.
+ * @example
+ * ```ts
+ * const requestId = (context: BaseCtx) => context.requestId;
+ * ```
+ */
 export interface BaseCtx {
   readonly req: Request;
   readonly url: URL;
@@ -22,7 +47,14 @@ export interface BaseCtx {
   readonly log: Logger;
 }
 
-/** Middleware returns the props it adds to the context. Throw to abort. */
+/**
+ * Middleware that adds typed context fields or throws to abort the request.
+ * @example
+ * ```ts
+ * const addUser: Middleware<BaseCtx, { user: { id: string } }> =
+ *   () => ({ user: { id: "u1" } });
+ * ```
+ */
 export type Middleware<In extends object, Add extends object> = (ctx: In) => Awaitable<Add>;
 
 type ParamNames<P extends string> = P extends `${string}:${infer N}/${infer Rest}`
@@ -31,13 +63,28 @@ type ParamNames<P extends string> = P extends `${string}:${infer N}/${infer Rest
     ? N
     : never;
 
-/** "/users/:id/posts/:postId" -> { id: string; postId: string } */
+/**
+ * Infer string-valued route params from a literal path.
+ * @example
+ * ```ts
+ * type Params = PathParams<"/users/:id">;
+ * ```
+ */
 export type PathParams<P extends string> = { [K in ParamNames<P>]: string };
 
 type Schema = z.ZodType | undefined;
 type Out<S extends Schema> = S extends z.ZodType ? z.output<S> : undefined;
 type In<S extends Schema> = S extends z.ZodType ? z.input<S> : unknown;
 
+/**
+ * Schema and handler definition for one route.
+ * @example
+ * ```ts
+ * const definition: RouteDef<BaseCtx, "/users", undefined, undefined, undefined> = {
+ *   handler: () => [],
+ * };
+ * ```
+ */
 export interface RouteDef<Ctx extends BaseCtx, Path extends string, Q extends Schema, B extends Schema, R extends Schema> {
   query?: Q;
   body?: B;
@@ -65,6 +112,13 @@ interface State {
 
 /* ---------- Router ---------- */
 
+/**
+ * Register Zod-validated fetch routes while accumulating a typed contract.
+ * @example
+ * ```ts
+ * const api = Router.create().get("/health", { handler: () => ({ status: "ok" }) });
+ * ```
+ */
 export class Router<Ctx extends BaseCtx = BaseCtx, Routes extends RouteMap = {}, Prefix extends string = ""> {
   readonly #s: State;
   private constructor(state: State) {

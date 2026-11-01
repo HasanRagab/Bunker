@@ -11,16 +11,23 @@
 <li><a href="" aria-current="page">RedisQueueStore</a></li></ul>
 <h1 class="deprecated">Class RedisQueueStore</h1></div>
 <section class="tsd-panel tsd-comment">
+<div class="tsd-comment tsd-typography"><p>Legacy class-based Redis queue store.</p>
+</div>
 <div class="tsd-comment tsd-typography">
 <div class="tsd-tag-deprecated">
 <h4 class="tsd-anchor-link" id="deprecated">Deprecated<a href="#deprecated" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p>Use <a href="../functions/redisQueue.html" class="tsd-kind-function">redisQueue</a>.</p>
+</div>
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">store</span><span class="hl-1"> = </span><span class="hl-0">new</span><span class="hl-1"> </span><span class="hl-3">RedisQueueStore</span><span class="hl-1">(</span><span class="hl-5">redisClient</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
 </div></div></section>
 <section class="tsd-panel">
 <h4>Implements</h4>
 <ul class="tsd-hierarchy">
 <li><a href="../interfaces/QueueStore.html" class="tsd-signature-type tsd-kind-interface">QueueStore</a></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/redis.ts#L91">src/infra/redis.ts:91</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/redis.ts#L123">src/infra/redis.ts:123</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -54,7 +61,7 @@
 <li><span><span class="tsd-kind-parameter">prefix</span>: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;bunker:jobs:&quot;</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="" class="tsd-signature-type tsd-kind-class">RedisQueueStore</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/redis.ts#L92">src/infra/redis.ts:92</a></li></ul></aside></div></li></ul></section></section></details>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/redis.ts#L124">src/infra/redis.ts:124</a></li></ul></aside></div></li></ul></section></section></details>
 <details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
 <h2 class="tsd-anchor-link" id="methods-1">Methods<a href="#methods-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2></summary>
 <section>
@@ -72,7 +79,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/QueuedJob.html" class="tsd-signature-type tsd-kind-interface">QueuedJob</a> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/QueueStore.html">QueueStore</a>.<a href="../interfaces/QueueStore.html#claim">claim</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/redis.ts#L101">src/infra/redis.ts:101</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/redis.ts#L133">src/infra/redis.ts:133</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="enqueue"><span class="deprecated">enqueue</span><a href="#enqueue" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -86,7 +93,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/QueueStore.html">QueueStore</a>.<a href="../interfaces/QueueStore.html#enqueue">enqueue</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/redis.ts#L94">src/infra/redis.ts:94</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/redis.ts#L126">src/infra/redis.ts:126</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="extend"><span class="deprecated">extend</span><a href="#extend" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -101,7 +108,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/QueueStore.html">QueueStore</a>.<a href="../interfaces/QueueStore.html#extend">extend</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/redis.ts#L114">src/infra/redis.ts:114</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/redis.ts#L146">src/infra/redis.ts:146</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="remove"><span class="deprecated">remove</span><a href="#remove" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -115,7 +122,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/QueueStore.html">QueueStore</a>.<a href="../interfaces/QueueStore.html#remove">remove</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/redis.ts#L130">src/infra/redis.ts:130</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/redis.ts#L162">src/infra/redis.ts:162</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="retry"><span class="deprecated">retry</span><a href="#retry" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -130,7 +137,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/QueueStore.html">QueueStore</a>.<a href="../interfaces/QueueStore.html#retry">retry</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/redis.ts#L122">src/infra/redis.ts:122</a></li></ul></aside></div></li></ul></section></section></details></div>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/redis.ts#L154">src/infra/redis.ts:154</a></li></ul></aside></div></li></ul></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

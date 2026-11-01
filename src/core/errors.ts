@@ -1,3 +1,10 @@
+/**
+ * HTTP boundary error with a status code and optional response details.
+ * @example
+ * ```ts
+ * throw HttpError.notFound("User not found");
+ * ```
+ */
 export class HttpError extends Error {
   constructor(
     readonly status: number,

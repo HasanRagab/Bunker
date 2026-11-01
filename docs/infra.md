@@ -40,8 +40,8 @@ Memory and Redis drivers implement the same contract.
 **When to use it:** Use pub/sub when events must reach another process. Use
 the in-process `Emitter` for local side effects.
 
-**Example:** The driver bundle creates a pub/sub instance from the event
-schemas declared by modules; see [the application example](../example/app.ts).
+**Example:** The driver bundle creates a pub/sub instance from event schemas
+declared by modules; see the [typed module example](./snippets/getting-started.ts).
 
 **Gotchas:** Redis pub/sub uses a dedicated subscriber connection. Delivery is
 not a durable queue; use jobs when work must survive disconnects.

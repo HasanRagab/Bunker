@@ -1,3 +1,10 @@
+/**
+ * Structural Redis command interface implemented by supported clients.
+ * @example
+ * ```ts
+ * const client: RedisClient = redisCommandClient;
+ * ```
+ */
 export interface RedisClient {
   get(key: string): Promise<string | null>;
   set(key: string, value: string, options: { PX: number; NX?: boolean }): Promise<string | null>;

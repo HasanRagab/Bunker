@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { err, ok, type Result } from "../core/result";
 
+/**
+ * Zod query schema for a bounded cursor-based page request.
+ * @example
+ * ```ts
+ * const query = paginationQuery.parse({ limit: "25" });
+ * ```
+ */
 export const paginationQuery = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   cursor: z.string().optional(),
@@ -11,6 +18,13 @@ export const pageSchema = <Item extends z.ZodType>(item: Item) => z.object({
   nextCursor: z.string().nullable(),
 });
 
+/**
+ * Return one bounded array page and an opaque continuation cursor.
+ * @example
+ * ```ts
+ * const page = paginateArray(records, { limit: 20 });
+ * ```
+ */
 export function paginateArray<T>(
   values: readonly T[],
   options: { limit: number; cursor?: string },

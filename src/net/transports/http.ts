@@ -1,3 +1,10 @@
+/**
+ * Create a fetcher that forwards requests to an HTTP service base URL.
+ * @example
+ * ```ts
+ * const fetcher = createHttpServiceFetcher("https://catalog.internal");
+ * ```
+ */
 export function createHttpServiceFetcher(endpoint: string): (input: string | URL | Request, init?: RequestInit) => Promise<Response> {
   const base = new URL(endpoint);
   if (base.protocol !== "http:" && base.protocol !== "https:") throw new TypeError("HTTP service endpoints must use http or https");
@@ -16,4 +23,3 @@ export function createHttpServiceFetcher(endpoint: string): (input: string | URL
     }));
   };
 }
-

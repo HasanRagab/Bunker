@@ -2,8 +2,21 @@ import { Database, type SQLQueryBindings } from "bun:sqlite";
 import { z } from "zod";
 import { err, ok, type Result } from "../../core/result";
 
+/** Error type returned by SQLite database helpers.
+ * @example
+ * ```ts
+ * const error: DbError = new Error("SQLite read failed");
+ * ```
+ */
 export type DbError = Error;
 
+/**
+ * Open a strict Bun SQLite database, returning setup failures as `Result`.
+ * @example
+ * ```ts
+ * const opened = openDatabase("./data.sqlite");
+ * ```
+ */
 export function openDatabase(path = ":memory:"): Result<Database, DbError> {
   try {
     return ok(new Database(path, { create: true, strict: true }));
@@ -12,6 +25,16 @@ export function openDatabase(path = ":memory:"): Result<Database, DbError> {
   }
 }
 
+/**
+ * Zod-validated synchronous CRUD contract for one table.
+ * @example
+ * ```ts
+ * const users: Repository<{ id: string; name: string }> = createRepository(db, {
+ *   table: "users",
+ *   schema: z.object({ id: z.string(), name: z.string() }),
+ * });
+ * ```
+ */
 export interface Repository<
   T extends Record<string, unknown>,
   Id extends SQLQueryBindings = string,
@@ -24,6 +47,13 @@ export interface Repository<
   delete(id: Id): Result<boolean, DbError>;
 }
 
+/**
+ * Create a typed SQLite repository from a table name and Zod schema.
+ * @example
+ * ```ts
+ * const users = createRepository(db, { table: "users", schema: userSchema });
+ * ```
+ */
 export function createRepository<S extends z.ZodObject, Id extends SQLQueryBindings = string>(
   db: Database,
   options: { table: string; schema: S; idColumn?: string },

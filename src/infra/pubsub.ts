@@ -2,9 +2,28 @@ import type { z } from "zod";
 import { createLogger, type Logger } from "../core/logger";
 import type { Awaitable } from "../core/types";
 
+/** Map event names to Zod payload schemas.
+ * @example
+ * ```ts
+ * const schemas: EventSchemas = { "user.created": z.object({ id: z.string() }) };
+ * ```
+ */
 export type EventSchemas = Record<string, z.ZodType>;
+
+/** Infer event payload types from their Zod schemas.
+ * @example
+ * ```ts
+ * type Events = EventPayloads<{ "user.created": typeof userSchema }>;
+ * ```
+ */
 export type EventPayloads<Schemas extends EventSchemas> = { [K in keyof Schemas]: z.output<Schemas[K]> };
 
+/** Typed publish/subscribe contract for event drivers.
+ * @example
+ * ```ts
+ * const events: PubSub<{ "user.created": { id: string } }> = memoryPubSub(schemas);
+ * ```
+ */
 export interface PubSub<Events extends { [K in keyof Events]: unknown }> {
   publish<K extends keyof Events>(event: K, payload: Events[K]): Promise<void>;
   subscribe<K extends keyof Events>(
@@ -13,7 +32,13 @@ export interface PubSub<Events extends { [K in keyof Events]: unknown }> {
   ): Promise<() => Promise<void>>;
 }
 
-/** An in-process pub/sub driver with the same validation contract as Redis pub/sub. */
+/**
+ * An in-process pub/sub driver with the same validation contract as Redis.
+ * @example
+ * ```ts
+ * const events = new MemoryPubSub({ "user.created": z.object({ id: z.string() }) });
+ * ```
+ */
 export class MemoryPubSub<Events extends EventSchemas> implements PubSub<EventPayloads<Events>> {
   #listeners = new Map<keyof Events, Set<(payload: unknown) => Awaitable<void>>>();
 
@@ -52,7 +77,13 @@ export class MemoryPubSub<Events extends EventSchemas> implements PubSub<EventPa
   }
 }
 
-/** Create a process-local typed pub/sub driver. */
+/**
+ * Create a process-local typed pub/sub driver.
+ * @example
+ * ```ts
+ * const events = memoryPubSub({ "user.created": z.object({ id: z.string() }) });
+ * ```
+ */
 export function memoryPubSub<Events extends EventSchemas>(
   schemas: Events,
   logger?: Logger,

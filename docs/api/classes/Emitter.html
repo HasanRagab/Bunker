@@ -11,14 +11,20 @@
 <li><a href="" aria-current="page">Emitter</a></li></ul>
 <h1>Class Emitter&lt;Events&gt;</h1></div>
 <section class="tsd-panel tsd-comment">
-<div class="tsd-comment tsd-typography"><p>Fully typed in-process event bus. <code>Events</code> maps event name -&gt; payload.</p>
-</div></section>
+<div class="tsd-comment tsd-typography"><p>Dispatch typed in-process events to local listeners.</p>
+</div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">events</span><span class="hl-1"> = </span><span class="hl-0">new</span><span class="hl-1"> </span><span class="hl-3">Emitter</span><span class="hl-1">&lt;{ </span><span class="hl-4">&quot;user.created&quot;</span><span class="hl-1">: { </span><span class="hl-5">id</span><span class="hl-1">: </span><span class="hl-6">string</span><span class="hl-1"> } }&gt;();</span><br/><span class="hl-5">events</span><span class="hl-1">.</span><span class="hl-3">on</span><span class="hl-1">(</span><span class="hl-4">&quot;user.created&quot;</span><span class="hl-1">, ({ </span><span class="hl-5">id</span><span class="hl-1"> }) </span><span class="hl-0">=&gt;</span><span class="hl-1"> </span><span class="hl-5">console</span><span class="hl-1">.</span><span class="hl-3">log</span><span class="hl-1">(</span><span class="hl-5">id</span><span class="hl-1">));</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div></section>
 <section class="tsd-panel">
 <h4>Type Parameters</h4>
 <ul class="tsd-type-parameter-list">
 <li><span id="events"><span class="tsd-kind-type-parameter">Events</span> <span class="tsd-signature-keyword">extends</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-signature-symbol">[</span><span class="tsd-kind-type-parameter">K</span> <span class="tsd-signature-keyword">in</span> <span class="tsd-signature-keyword">keyof</span> <a class="tsd-signature-type tsd-kind-type-parameter" href="#events">Events</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">unknown</span> <span class="tsd-signature-symbol">}</span></span></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/core/events.ts#L6">src/core/events.ts:6</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/core/events.ts#L14">src/core/events.ts:14</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -67,7 +73,7 @@
 <li><span><span class="tsd-kind-parameter">payload</span>: <a class="tsd-signature-type tsd-kind-type-parameter" href="#events">Events</a><span class="tsd-signature-symbol">[</span><a class="tsd-signature-type tsd-kind-type-parameter" href="#emitk">K</a><span class="tsd-signature-symbol">]</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/core/events.ts#L16">src/core/events.ts:16</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/core/events.ts#L24">src/core/events.ts:24</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="on"><span>on</span><a href="#on" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -85,7 +91,7 @@
 <li><span><span class="tsd-kind-parameter">handler</span>: <span class="tsd-signature-type">Handler</span><span class="tsd-signature-symbol">&lt;</span><a class="tsd-signature-type tsd-kind-type-parameter" href="#events">Events</a><span class="tsd-signature-symbol">[</span><a class="tsd-signature-type tsd-kind-type-parameter" href="#onk">K</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/core/events.ts#L9">src/core/events.ts:9</a></li></ul></aside></div></li></ul></section></section></details></div>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/core/events.ts#L17">src/core/events.ts:17</a></li></ul></aside></div></li></ul></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

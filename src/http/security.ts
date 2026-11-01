@@ -1,3 +1,10 @@
+/**
+ * Wrap a fetch handler with baseline security response headers.
+ * @example
+ * ```ts
+ * const fetch = withSecurityHeaders(router.fetch);
+ * ```
+ */
 export function withSecurityHeaders(
   handler: (req: Request) => Promise<Response>,
   headers: Record<string, string> = {

@@ -42,7 +42,8 @@ migrations, and ORM-level query composition. Install `drizzle-orm` and
 `drizzle-zod` as optional peers.
 
 **Example:** Define tables in your application, then pass them in the adapter's
-`schema` option. Copy the checked [Drizzle snippet](./snippets/drizzle.ts).
+`schema` option. Copy the checked [Drizzle snippet](./snippets/drizzle.ts) or
+browse the [Drizzle API reference](./api/drizzle/index.html).
 
 **Gotchas:** Bunker does not bundle an application schema. Keep table
 definitions and migrations in your application; import Drizzle only from the

@@ -1,6 +1,12 @@
 import type { BaseCtx, RouteMap, Router } from "./router";
 
-/** Mount independently registered route groups under path prefixes. */
+/**
+ * Mount independently registered route groups under path prefixes.
+ * @example
+ * ```ts
+ * const api = composeApps(Router.create(), [{ prefix: "/users", register: registerUsers }]);
+ * ```
+ */
 export function composeApps<Ctx extends BaseCtx, Routes extends RouteMap, Prefix extends string>(
   router: Router<Ctx, Routes, Prefix>,
   apps: readonly {

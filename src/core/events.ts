@@ -3,6 +3,14 @@ import type { Awaitable } from "./types";
 type Handler<P> = (payload: P) => Awaitable<void>;
 
 /** Fully typed in-process event bus. `Events` maps event name -> payload. */
+/**
+ * Dispatch typed in-process events to local listeners.
+ * @example
+ * ```ts
+ * const events = new Emitter<{ "user.created": { id: string } }>();
+ * events.on("user.created", ({ id }) => console.log(id));
+ * ```
+ */
 export class Emitter<Events extends { [K in keyof Events]: unknown }> {
   #handlers = new Map<keyof Events, Set<Handler<never>>>();
 

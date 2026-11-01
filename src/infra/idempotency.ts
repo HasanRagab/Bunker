@@ -10,6 +10,13 @@ interface StoredResponse {
   readonly body?: string;
 }
 
+/**
+ * Replay successful mutating requests using an atomic cache store.
+ * @example
+ * ```ts
+ * const fetch = withIdempotency(router.fetch, drivers.idempotency);
+ * ```
+ */
 export function withIdempotency(
   handler: (request: Request) => Promise<Response>,
   store: CacheStore,

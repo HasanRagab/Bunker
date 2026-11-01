@@ -8,7 +8,14 @@ import { createLogger, type Logger } from "../core/logger";
 
 export type { RedisClient } from "./redis-client";
 
-/** @deprecated Use {@link redisCache}. */
+/**
+ * Legacy class-based Redis cache store.
+ * @deprecated Use {@link redisCache}.
+ * @example
+ * ```ts
+ * const store = new RedisCacheStore(redisClient);
+ * ```
+ */
 export class RedisCacheStore implements CacheStore {
   constructor(private readonly redis: RedisClient, private readonly prefix = "bunker:cache:") {}
 
@@ -59,12 +66,25 @@ export class RedisCacheStore implements CacheStore {
   }
 }
 
-/** Create a Redis-backed cache store. */
+/**
+ * Create a Redis-backed cache store.
+ * @example
+ * ```ts
+ * const store = redisCache(redisClient);
+ * ```
+ */
 export function redisCache(redis: RedisClient, prefix = "bunker:cache:"): RedisCacheStore {
   return new RedisCacheStore(redis, prefix);
 }
 
-/** @deprecated Use {@link redisRateLimit}. */
+/**
+ * Legacy class-based Redis rate-limit store.
+ * @deprecated Use {@link redisRateLimit}.
+ * @example
+ * ```ts
+ * const store = new RedisRateLimitStore(redisClient);
+ * ```
+ */
 export class RedisRateLimitStore implements RateLimitStore {
   constructor(private readonly redis: RedisClient, private readonly prefix = "bunker:rate:") {}
 
@@ -81,13 +101,25 @@ export class RedisRateLimitStore implements RateLimitStore {
   }
 }
 
-/** Create a Redis-backed rate-limit store. */
+/**
+ * Create a Redis-backed rate-limit store.
+ * @example
+ * ```ts
+ * const store = redisRateLimit(redisClient);
+ * ```
+ */
 export function redisRateLimit(redis: RedisClient, prefix = "bunker:rate:"): RedisRateLimitStore {
   return new RedisRateLimitStore(redis, prefix);
 }
 
-/** @deprecated Use {@link redisQueue}. */
-/** @deprecated Use {@link redisQueue}. */
+/**
+ * Legacy class-based Redis queue store.
+ * @deprecated Use {@link redisQueue}.
+ * @example
+ * ```ts
+ * const store = new RedisQueueStore(redisClient);
+ * ```
+ */
 export class RedisQueueStore implements QueueStore {
   constructor(private readonly redis: RedisClient, private readonly prefix = "bunker:jobs:") {}
 
@@ -147,12 +179,24 @@ export class RedisQueueStore implements QueueStore {
   }
 }
 
-/** Create a Redis-backed job queue store. */
+/**
+ * Create a Redis-backed job queue store.
+ * @example
+ * ```ts
+ * const store = redisQueue(redisClient);
+ * ```
+ */
 export function redisQueue(redis: RedisClient, prefix = "bunker:jobs:"): RedisQueueStore {
   return new RedisQueueStore(redis, prefix);
 }
 
-/** Create a Redis-backed typed pub/sub driver. */
+/**
+ * Create a Redis-backed typed pub/sub driver.
+ * @example
+ * ```ts
+ * const events = redisPubSub(publisher, subscriber, { "user.created": userSchema });
+ * ```
+ */
 export function redisPubSub<Events extends EventSchemas>(
   publisher: RedisClient,
   subscriber: RedisClient,

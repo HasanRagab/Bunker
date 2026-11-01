@@ -1,14 +1,32 @@
 import type { RedisClient } from "./redis-client";
 
+/** Lease returned when a lock is acquired.
+ * @example
+ * ```ts
+ * const lease: LockLease | null = await lock.acquire("task", 1_000);
+ * ```
+ */
 export interface LockLease {
   release(): Promise<void>;
 }
 
+/** Pluggable lock contract for local or distributed coordination.
+ * @example
+ * ```ts
+ * const lock: Lock = memoryLock();
+ * ```
+ */
 export interface Lock {
   acquire(key: string, ttlMs: number): Promise<LockLease | null>;
 }
 
-/** An in-process lock implementation for local use and tests. */
+/**
+ * An in-process lock implementation for local use and tests.
+ * @example
+ * ```ts
+ * const lock = new MemoryLock();
+ * ```
+ */
 export class MemoryLock implements Lock {
   #leases = new Map<string, { token: string; expiresAt: number }>();
 
@@ -30,12 +48,25 @@ export class MemoryLock implements Lock {
   }
 }
 
-/** Create a process-local lock driver. */
+/**
+ * Create a process-local lock driver.
+ * @example
+ * ```ts
+ * const lock = memoryLock();
+ * ```
+ */
 export function memoryLock(): MemoryLock {
   return new MemoryLock();
 }
 
-/** @deprecated Use {@link redisLock}. */
+/**
+ * Legacy class-based Redis lock driver.
+ * @deprecated Use {@link redisLock}.
+ * @example
+ * ```ts
+ * const lock = new RedisLock(redisClient);
+ * ```
+ */
 export class RedisLock implements Lock {
   constructor(private readonly redis: RedisClient, private readonly prefix = "bunker:lock:") {}
 
@@ -67,7 +98,13 @@ end
 return 0
 `;
 
-/** Create a Redis-backed lock driver. */
+/**
+ * Create a Redis-backed lock driver.
+ * @example
+ * ```ts
+ * const lock = redisLock(redisClient);
+ * ```
+ */
 export function redisLock(redis: RedisClient, prefix = "bunker:lock:"): RedisLock {
   return new RedisLock(redis, prefix);
 }

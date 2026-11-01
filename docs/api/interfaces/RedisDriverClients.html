@@ -15,13 +15,13 @@
 </div>
 <div class="tsd-comment tsd-typography">
 <div class="tsd-tag-example">
-<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">clients</span><span class="hl-1">: </span><span class="hl-9">RedisDriverClients</span><span class="hl-1"> = {</span><br/><span class="hl-1">  </span><span class="hl-3">client:</span><span class="hl-1"> </span><span class="hl-3">redisCommandClient</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">publisher:</span><span class="hl-1"> </span><span class="hl-3">redisPublisher</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">subscriber:</span><span class="hl-1"> </span><span class="hl-3">redisSubscriber</span><span class="hl-1">,</span><br/><span class="hl-1">};</span>
+<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">clients</span><span class="hl-1">: </span><span class="hl-6">RedisDriverClients</span><span class="hl-1"> = {</span><br/><span class="hl-1">  </span><span class="hl-5">client:</span><span class="hl-1"> </span><span class="hl-5">redisCommandClient</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-5">publisher:</span><span class="hl-1"> </span><span class="hl-5">redisPublisher</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-5">subscriber:</span><span class="hl-1"> </span><span class="hl-5">redisSubscriber</span><span class="hl-1">,</span><br/><span class="hl-1">};</span>
 </code><button type="button">Copy</button></pre>
 
 </div></div></section>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">RedisDriverClients</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#client">client</a><span class="tsd-signature-symbol">:</span> <a href="RedisClient.html" class="tsd-signature-type tsd-kind-interface">RedisClient</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#close">close</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#publisher">publisher</a><span class="tsd-signature-symbol">?:</span> <a href="RedisClient.html" class="tsd-signature-type tsd-kind-interface">RedisClient</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#subscriber">subscriber</a><span class="tsd-signature-symbol">?:</span> <a href="RedisClient.html" class="tsd-signature-type tsd-kind-interface">RedisClient</a><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/drivers.ts#L57">src/infra/drivers.ts:57</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/drivers.ts#L63">src/infra/drivers.ts:63</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -41,22 +41,22 @@
 <h3 class="tsd-anchor-link" id="client"><code class="tsd-tag">Readonly</code><span>client</span><a href="#client" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">client</span><span class="tsd-signature-symbol">:</span> <a href="RedisClient.html" class="tsd-signature-type tsd-kind-interface">RedisClient</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/drivers.ts#L58">src/infra/drivers.ts:58</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/drivers.ts#L64">src/infra/drivers.ts:64</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="close"><code class="tsd-tag">Optional</code> <code class="tsd-tag">Readonly</code><span>close</span><a href="#close" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">close</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/drivers.ts#L61">src/infra/drivers.ts:61</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/drivers.ts#L67">src/infra/drivers.ts:67</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="publisher"><code class="tsd-tag">Optional</code> <code class="tsd-tag">Readonly</code><span>publisher</span><a href="#publisher" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">publisher</span><span class="tsd-signature-symbol">?:</span> <a href="RedisClient.html" class="tsd-signature-type tsd-kind-interface">RedisClient</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/drivers.ts#L59">src/infra/drivers.ts:59</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/drivers.ts#L65">src/infra/drivers.ts:65</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="subscriber"><code class="tsd-tag">Optional</code> <code class="tsd-tag">Readonly</code><span>subscriber</span><a href="#subscriber" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">subscriber</span><span class="tsd-signature-symbol">?:</span> <a href="RedisClient.html" class="tsd-signature-type tsd-kind-interface">RedisClient</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/drivers.ts#L60">src/infra/drivers.ts:60</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/drivers.ts#L66">src/infra/drivers.ts:66</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

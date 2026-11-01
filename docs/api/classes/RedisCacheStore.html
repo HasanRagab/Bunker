@@ -11,16 +11,23 @@
 <li><a href="" aria-current="page">RedisCacheStore</a></li></ul>
 <h1 class="deprecated">Class RedisCacheStore</h1></div>
 <section class="tsd-panel tsd-comment">
+<div class="tsd-comment tsd-typography"><p>Legacy class-based Redis cache store.</p>
+</div>
 <div class="tsd-comment tsd-typography">
 <div class="tsd-tag-deprecated">
 <h4 class="tsd-anchor-link" id="deprecated">Deprecated<a href="#deprecated" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p>Use <a href="../functions/redisCache.html" class="tsd-kind-function">redisCache</a>.</p>
+</div>
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">store</span><span class="hl-1"> = </span><span class="hl-0">new</span><span class="hl-1"> </span><span class="hl-3">RedisCacheStore</span><span class="hl-1">(</span><span class="hl-5">redisClient</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
 </div></div></section>
 <section class="tsd-panel">
 <h4>Implements</h4>
 <ul class="tsd-hierarchy">
 <li><a href="../interfaces/CacheStore.html" class="tsd-signature-type tsd-kind-interface">CacheStore</a></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/redis.ts#L12">src/infra/redis.ts:12</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/redis.ts#L19">src/infra/redis.ts:19</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -56,7 +63,7 @@
 <li><span><span class="tsd-kind-parameter">prefix</span>: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;bunker:cache:&quot;</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="" class="tsd-signature-type tsd-kind-class">RedisCacheStore</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/redis.ts#L13">src/infra/redis.ts:13</a></li></ul></aside></div></li></ul></section></section></details>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/redis.ts#L20">src/infra/redis.ts:20</a></li></ul></aside></div></li></ul></section></section></details>
 <details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
 <h2 class="tsd-anchor-link" id="methods-1">Methods<a href="#methods-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2></summary>
 <section>
@@ -74,7 +81,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/CacheStore.html">CacheStore</a>.<a href="../interfaces/CacheStore.html#compareanddelete">compareAndDelete</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/redis.ts#L50">src/infra/redis.ts:50</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/redis.ts#L57">src/infra/redis.ts:57</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="compareandset"><span class="deprecated">compare<wbr/>And<wbr/>Set</span><a href="#compareandset" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -91,7 +98,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/CacheStore.html">CacheStore</a>.<a href="../interfaces/CacheStore.html#compareandset">compareAndSet</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/redis.ts#L42">src/infra/redis.ts:42</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/redis.ts#L49">src/infra/redis.ts:49</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="delete"><span class="deprecated">delete</span><a href="#delete" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -105,7 +112,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/CacheStore.html">CacheStore</a>.<a href="../interfaces/CacheStore.html#delete">delete</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/redis.ts#L24">src/infra/redis.ts:24</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/redis.ts#L31">src/infra/redis.ts:31</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="get"><span class="deprecated">get</span><a href="#get" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -119,7 +126,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/CacheStore.html">CacheStore</a>.<a href="../interfaces/CacheStore.html#get">get</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/redis.ts#L15">src/infra/redis.ts:15</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/redis.ts#L22">src/infra/redis.ts:22</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="increment"><span class="deprecated">increment</span><a href="#increment" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -134,7 +141,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/CacheStore.html">CacheStore</a>.<a href="../interfaces/CacheStore.html#increment">increment</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/redis.ts#L33">src/infra/redis.ts:33</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/redis.ts#L40">src/infra/redis.ts:40</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="set"><span class="deprecated">set</span><a href="#set" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -150,7 +157,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/CacheStore.html">CacheStore</a>.<a href="../interfaces/CacheStore.html#set">set</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/redis.ts#L19">src/infra/redis.ts:19</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/redis.ts#L26">src/infra/redis.ts:26</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="setifabsent"><span class="deprecated">set<wbr/>If<wbr/>Absent</span><a href="#setifabsent" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -166,7 +173,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/CacheStore.html">CacheStore</a>.<a href="../interfaces/CacheStore.html#setifabsent">setIfAbsent</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/infra/redis.ts#L28">src/infra/redis.ts:28</a></li></ul></aside></div></li></ul></section></section></details></div>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/infra/redis.ts#L35">src/infra/redis.ts:35</a></li></ul></aside></div></li></ul></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

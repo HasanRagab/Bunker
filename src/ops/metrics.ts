@@ -3,6 +3,13 @@ import type { BaseCtx, RouteMap, Router } from "../http/router";
 
 type FetchHandler = (request: Request) => Promise<Response>;
 
+/**
+ * Collect per-instance request counts, in-flight gauges, and duration totals.
+ * @example
+ * ```ts
+ * const metrics = createRequestMetrics("api-1");
+ * ```
+ */
 export function createRequestMetrics(instanceId: string = randomUUID()) {
   const counts = new Map<string, number>();
   const durations = new Map<string, { count: number; sumMs: number }>();
@@ -60,6 +67,13 @@ export function createRequestMetrics(instanceId: string = randomUUID()) {
   };
 }
 
+/**
+ * Register a Prometheus text endpoint for request metrics.
+ * @example
+ * ```ts
+ * metricsRoute(router, createRequestMetrics("api-1"));
+ * ```
+ */
 export function metricsRoute<C extends BaseCtx, Routes extends RouteMap, Prefix extends string>(
   router: Router<C, Routes, Prefix>,
   metrics: ReturnType<typeof createRequestMetrics>,

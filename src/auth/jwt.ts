@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { err, ok, type Result } from "../core/result";
 
+/**
+ * Sign a JSON payload as an HS256 JWT and return token creation failures as `Result`.
+ * @example
+ * ```ts
+ * const token = await signJwt({ sub: "user-1" }, secret, { expiresInSeconds: 900 });
+ * ```
+ */
 export async function signJwt<T extends object>(
   payload: T,
   secret: string,
@@ -29,6 +36,13 @@ export async function signJwt<T extends object>(
   }
 }
 
+/**
+ * Verify a JWT signature, claims, and payload against a Zod schema.
+ * @example
+ * ```ts
+ * const user = await verifyJwt(token, secret, z.object({ sub: z.string() }));
+ * ```
+ */
 export async function verifyJwt<S extends z.ZodType>(
   token: string,
   secret: string,

@@ -1,6 +1,13 @@
 import { createConnection, createServer, type Socket, type Server } from "node:net";
 import { createLogger, type Logger } from "../../core/logger";
 
+/** Bound TCP service and its cleanup handle.
+ * @example
+ * ```ts
+ * const server: TcpServiceServer = await serveTcpService(api.fetch, { port: 4000 });
+ * await server.close();
+ * ```
+ */
 export interface TcpServiceServer {
   readonly host: string;
   readonly port: number;
@@ -23,6 +30,13 @@ interface TcpResponse {
 
 const DEFAULT_MAX_FRAME_BYTES = 8 * 1024 * 1024;
 
+/**
+ * Serve a fetch handler over the toolkit's framed TCP transport.
+ * @example
+ * ```ts
+ * const server = await serveTcpService(api.fetch, { host: "127.0.0.1", port: 4000 });
+ * ```
+ */
 export async function serveTcpService(
   handler: (request: Request) => Promise<Response>,
   options: { host?: string; port: number; timeoutMs?: number; maxFrameBytes?: number; logger?: Logger },
@@ -63,6 +77,13 @@ export async function serveTcpService(
   };
 }
 
+/**
+ * Create a fetcher for a TCP service endpoint.
+ * @example
+ * ```ts
+ * const fetcher = createTcpServiceFetcher("tcp://127.0.0.1:4000");
+ * ```
+ */
 export function createTcpServiceFetcher(
   endpoint: string,
   options: { timeoutMs?: number; maxFrameBytes?: number } = {},
@@ -281,4 +302,3 @@ function closeServer(server: Server): Promise<void> {
 function asError(cause: unknown): Error {
   return cause instanceof Error ? cause : new Error(String(cause));
 }
-

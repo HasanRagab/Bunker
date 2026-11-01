@@ -11,14 +11,20 @@
 <li><a href="" aria-current="page">PathParams</a></li></ul>
 <h1>Type Alias PathParams&lt;P&gt;</h1></div>
 <div class="tsd-signature"><span class="tsd-kind-type-alias">PathParams</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-signature-symbol">[</span><span class="tsd-kind-type-parameter">K</span> <span class="tsd-signature-keyword">in</span> <span class="tsd-signature-type">ParamNames</span><span class="tsd-signature-symbol">&lt;</span><a class="tsd-signature-type tsd-kind-type-parameter" href="#p">P</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span></div>
-<div class="tsd-comment tsd-typography"><p>&quot;/users/:id/posts/:postId&quot; -&gt; { id: string; postId: string }</p>
+<div class="tsd-comment tsd-typography"><p>Infer string-valued route params from a literal path.</p>
 </div>
 <section class="tsd-panel">
 <h4>Type Parameters</h4>
 <ul class="tsd-type-parameter-list">
-<li><span id="p"><span class="tsd-kind-type-parameter">P</span> <span class="tsd-signature-keyword">extends</span> <span class="tsd-signature-type">string</span></span></li></ul></section><aside class="tsd-sources">
+<li><span id="p"><span class="tsd-kind-type-parameter">P</span> <span class="tsd-signature-keyword">extends</span> <span class="tsd-signature-type">string</span></span></li></ul></section>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">type</span><span class="hl-1"> </span><span class="hl-6">Params</span><span class="hl-1"> = </span><span class="hl-6">PathParams</span><span class="hl-1">&lt;</span><span class="hl-4">&quot;/users/:id&quot;</span><span class="hl-1">&gt;;</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/http/router.ts#L35">src/http/router.ts:35</a></li></ul></aside></div>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/http/router.ts#L73">src/http/router.ts:73</a></li></ul></aside></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

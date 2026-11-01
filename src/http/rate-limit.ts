@@ -3,6 +3,13 @@ import type { Awaitable } from "../core/types";
 import type { RateLimitStoreLike } from "../infra/rate-limit";
 import type { BaseCtx, Middleware } from "./router";
 
+/**
+ * Limit requests using a pluggable store and an explicit caller identity key.
+ * @example
+ * ```ts
+ * const limit = rateLimit({ limit: 60, windowMs: 60_000, store, key: ({ user }) => user.id });
+ * ```
+ */
 export function rateLimit<Ctx extends BaseCtx = BaseCtx>(options: {
   limit: number;
   windowMs: number;
@@ -21,7 +28,13 @@ export function rateLimit<Ctx extends BaseCtx = BaseCtx>(options: {
   };
 }
 
-/** Use only when the forwarding header is set by a trusted reverse proxy. */
+/**
+ * Resolve a client IP when a trusted proxy sets the forwarding header.
+ * @example
+ * ```ts
+ * const key = trustedProxyIpKey(context);
+ * ```
+ */
 export function trustedProxyIpKey(ctx: BaseCtx): string {
   const address = ctx.req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
     ?? ctx.req.headers.get("x-real-ip");

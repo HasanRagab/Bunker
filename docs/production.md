@@ -30,8 +30,8 @@ Run web and worker roles from the same application with `ROLE=web`,
 or expired visibility lease can cause a job to run again. Make job handlers
 idempotent and propagate `requestId` for logs and outbound calls.
 
-See the Redis-backed [scaling example](../example/scaling.ts) and the
-[infrastructure guide](./infra.md) for a complete driver setup.
+See the repository's [Redis-backed scaling example](https://github.com/HasanRagab/Bunker/blob/main/example/scaling.ts)
+and the [infrastructure guide](./infra.md) for a complete driver setup.
 
 ## Readiness and graceful shutdown
 

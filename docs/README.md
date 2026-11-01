@@ -19,4 +19,4 @@
 
 - [Generated API reference](./api/)
 - [Publishing](./publishing.md)
-- [Runnable examples](../example/)
+- [Repository examples](https://github.com/HasanRagab/Bunker/tree/main/example)

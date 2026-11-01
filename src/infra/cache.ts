@@ -1,6 +1,12 @@
 import { err, ok, type Result } from "../core/result";
 import type { z } from "zod";
 
+/** Atomic string storage used by cache and coordination adapters.
+ * @example
+ * ```ts
+ * const store: CacheStore = memoryCache();
+ * ```
+ */
 export interface CacheStore {
   get(key: string): Promise<string | null>;
   set(key: string, value: string, ttlMs: number): Promise<void>;
@@ -11,7 +17,14 @@ export interface CacheStore {
   compareAndDelete(key: string, expected: string): Promise<boolean>;
 }
 
-/** @deprecated Use {@link memoryCache}. */
+/**
+ * Legacy class-based memory cache store.
+ * @deprecated Use {@link memoryCache}.
+ * @example
+ * ```ts
+ * const store = new MemoryCacheStore();
+ * ```
+ */
 export class MemoryCacheStore implements CacheStore {
   #entries = new Map<string, { value: string; expiresAt: number }>();
 
@@ -66,11 +79,25 @@ export class MemoryCacheStore implements CacheStore {
   }
 }
 
-/** Create a process-local cache store. */
+/**
+ * Create a process-local cache store.
+ * @example
+ * ```ts
+ * const cache = createCache(memoryCache());
+ * ```
+ */
 export function memoryCache(): MemoryCacheStore {
   return new MemoryCacheStore();
 }
 
+/**
+ * Create a typed cache facade over a pluggable store.
+ * @example
+ * ```ts
+ * const cache = createCache(memoryCache());
+ * const value = await cache.wrap("key", 60_000, () => ({ id: "u1" }));
+ * ```
+ */
 export function createCache(store: CacheStore) {
   return {
     async get<T>(key: string, schema: { parse(value: unknown): T }): Promise<Result<T | null, Error>> {

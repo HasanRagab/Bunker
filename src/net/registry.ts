@@ -1,6 +1,12 @@
 import { createLogger, type Logger } from "../core/logger";
 import type { RedisClient } from "../infra/redis-client";
 
+/** Registered endpoint for a healthy service process.
+ * @example
+ * ```ts
+ * const instance: ServiceInstance = { name: "catalog", instanceId: "catalog-1", endpoint: "http://localhost:3001", transport: "http" };
+ * ```
+ */
 export interface ServiceInstance {
   readonly name: string;
   readonly instanceId: string;
@@ -8,17 +14,37 @@ export interface ServiceInstance {
   readonly transport: "http" | "tcp";
 }
 
+/** Handle used to refresh or remove a service registration.
+ * @example
+ * ```ts
+ * const registration: ServiceRegistration = await registry.register(instance);
+ * await registration.close();
+ * ```
+ */
 export interface ServiceRegistration {
   refresh(): Promise<void>;
   close(): Promise<void>;
 }
 
+/** Registry contract for service registration and discovery.
+ * @example
+ * ```ts
+ * const registry: ServiceRegistry = memoryServiceRegistry();
+ * ```
+ */
 export interface ServiceRegistry {
   register(instance: ServiceInstance, options?: { ttlMs?: number; heartbeatMs?: number }): Promise<ServiceRegistration>;
   discover(name: string): Promise<ServiceInstance[]>;
 }
 
-/** @deprecated Use {@link memoryServiceRegistry}. */
+/**
+ * Legacy class-based in-memory service registry.
+ * @deprecated Use {@link memoryServiceRegistry}.
+ * @example
+ * ```ts
+ * const registry = new MemoryServiceRegistry();
+ * ```
+ */
 export class MemoryServiceRegistry implements ServiceRegistry {
   #instances = new Map<string, Map<string, { instance: ServiceInstance; expiresAt: number }>>();
 
@@ -68,7 +94,14 @@ export class MemoryServiceRegistry implements ServiceRegistry {
   }
 }
 
-/** @deprecated Use {@link redisServiceRegistry}. */
+/**
+ * Legacy class-based Redis service registry.
+ * @deprecated Use {@link redisServiceRegistry}.
+ * @example
+ * ```ts
+ * const registry = new RedisServiceRegistry(redisClient);
+ * ```
+ */
 export class RedisServiceRegistry implements ServiceRegistry {
   constructor(
     private readonly redis: RedisClient,
@@ -162,16 +195,35 @@ function validateRegistration(instance: ServiceInstance, ttlMs: number, heartbea
   }
 }
 
+/**
+ * Validate a service name before registration or lookup.
+ * @example
+ * ```ts
+ * assertServiceName("catalog");
+ * ```
+ */
 export function assertServiceName(name: string): void {
   if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(name)) throw new TypeError(`Invalid service name: ${name}`);
 }
 
-/** Create a process-local service registry. */
+/**
+ * Create a process-local service registry.
+ * @example
+ * ```ts
+ * const registry = memoryServiceRegistry();
+ * ```
+ */
 export function memoryServiceRegistry(logger?: Logger): MemoryServiceRegistry {
   return new MemoryServiceRegistry(logger);
 }
 
-/** Create a Redis-backed service registry. */
+/**
+ * Create a Redis-backed service registry.
+ * @example
+ * ```ts
+ * const registry = redisServiceRegistry(redisClient);
+ * ```
+ */
 export function redisServiceRegistry(
   redis: RedisClient,
   prefix = "bunker:services:",

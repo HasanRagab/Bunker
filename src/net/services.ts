@@ -5,6 +5,14 @@ import { createHttpServiceFetcher } from "./transports/http";
 import { createTcpServiceFetcher } from "./transports/tcp";
 
 /** Create a round-robin client for service instances discovered from a registry. */
+/**
+ * Discover service instances and forward each request to a selected endpoint.
+ * @example
+ * ```ts
+ * const client = createServiceClient(registry, "catalog");
+ * const response = await client.fetch(new Request("http://catalog/items"));
+ * ```
+ */
 export function createServiceClient(
   registry: ServiceRegistry,
   name: string,
@@ -33,6 +41,13 @@ export function createServiceClient(
 }
 
 /** Create a typed API client that discovers a service instance for each request. */
+/**
+ * Create a typed API client that resolves its service endpoint per request.
+ * @example
+ * ```ts
+ * const client = createDiscoveredClient(registry, "catalog", catalogRouter);
+ * ```
+ */
 export function createDiscoveredClient<Ctx extends BaseCtx, Routes extends RouteMap, Prefix extends string>(
   registry: ServiceRegistry,
   name: string,

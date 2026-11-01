@@ -1,5 +1,13 @@
 import { assertServiceName } from "../registry";
 
+/**
+ * Register and call fetch handlers directly in one process.
+ * @example
+ * ```ts
+ * const transport = new MemoryServiceTransport();
+ * const unregister = transport.register("catalog", async () => Response.json({ ok: true }));
+ * ```
+ */
 export class MemoryServiceTransport {
   #handlers = new Map<string, (request: Request) => Promise<Response>>();
 
@@ -19,6 +27,13 @@ export class MemoryServiceTransport {
   }
 }
 
+/**
+ * Create a fetcher for a handler registered on a memory transport.
+ * @example
+ * ```ts
+ * const fetcher = createMemoryServiceFetcher(transport, "catalog");
+ * ```
+ */
 export function createMemoryServiceFetcher(
   transport: MemoryServiceTransport,
   name: string,
@@ -31,4 +46,3 @@ export function createMemoryServiceFetcher(
     return transport.fetch(name, request);
   };
 }
-

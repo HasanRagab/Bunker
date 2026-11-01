@@ -86,7 +86,7 @@
     "check": "tsc -p .",
     "test": "bun test",
     "build": "tsc -p tsconfig.build.json && tsc-esm-fix --tsconfig tsconfig.build.json",
-    "docs": "typedoc --entryPoints src/index.ts --out docs/api --readme none",
+    "docs": "typedoc --entryPoints src/index.ts --out docs/api --readme none --sourceLinkTemplate https://github.com/HasanRagab/Bunker/blob/main/{path}#L{line} && typedoc --entryPoints src/data/drizzle/index.ts --out docs/api/drizzle --readme none --sourceLinkTemplate https://github.com/HasanRagab/Bunker/blob/main/{path}#L{line}",
     "verify": "bun run check && bun test && bun run build",
     "pack:check": "npm pack --dry-run",
     "db:generate": "drizzle-kit generate --config example/drizzle.config.ts",

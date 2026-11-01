@@ -6,6 +6,14 @@ const cronRanges: readonly (readonly [number, number])[] = [[0, 59], [0, 23], [1
 
 type Queue = { enqueue<Payload>(job: JobDefinition<Payload>, payload: unknown, options?: { delayMs?: number }): Promise<Result<string, Error>> };
 
+/**
+ * Enqueue cron-scheduled jobs under distributed locks.
+ * @example
+ * ```ts
+ * const scheduler = createScheduler(queue, drivers.lock);
+ * scheduler.add("0 * * * *", cleanupJob, {});
+ * ```
+ */
 export function createScheduler(
   queue: Queue,
   lock: Lock,

@@ -10,9 +10,18 @@
 <ul class="tsd-breadcrumb" aria-label="Breadcrumb">
 <li><a href="" aria-current="page">Logger</a></li></ul>
 <h1>Interface Logger</h1></div>
+<section class="tsd-panel tsd-comment">
+<div class="tsd-comment tsd-typography"><p>Structured logger contract with child bindings.</p>
+</div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">logger</span><span class="hl-1">: </span><span class="hl-6">Logger</span><span class="hl-1"> = </span><span class="hl-3">createLogger</span><span class="hl-1">({ </span><span class="hl-5">level:</span><span class="hl-1"> </span><span class="hl-4">&quot;info&quot;</span><span class="hl-1"> });</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div></section>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">Logger</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#debug">debug</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">LogFn</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#error">error</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">LogFn</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#info">info</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">LogFn</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#warn">warn</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">LogFn</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#child-1">child</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">bindings</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Fields</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="" class="tsd-signature-type tsd-kind-interface">Logger</a><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/core/logger.ts#L7">src/core/logger.ts:7</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/core/logger.ts#L20">src/core/logger.ts:20</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -36,22 +45,22 @@
 <h3 class="tsd-anchor-link" id="debug"><span>debug</span><a href="#debug" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">debug</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">LogFn</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/core/logger.ts#L8">src/core/logger.ts:8</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/core/logger.ts#L21">src/core/logger.ts:21</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="error"><span>error</span><a href="#error" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">error</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">LogFn</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/core/logger.ts#L11">src/core/logger.ts:11</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/core/logger.ts#L24">src/core/logger.ts:24</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="info"><span>info</span><a href="#info" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">info</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">LogFn</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/core/logger.ts#L9">src/core/logger.ts:9</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/core/logger.ts#L22">src/core/logger.ts:22</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="warn"><span>warn</span><a href="#warn" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">warn</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">LogFn</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/core/logger.ts#L10">src/core/logger.ts:10</a></li></ul></aside></section></section></details>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/core/logger.ts#L23">src/core/logger.ts:23</a></li></ul></aside></section></section></details>
 <details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
 <h2 class="tsd-anchor-link" id="methods-1">Methods<a href="#methods-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2></summary>
 <section>
@@ -67,7 +76,7 @@
 <li><span><span class="tsd-kind-parameter">bindings</span>: <span class="tsd-signature-type">Fields</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="" class="tsd-signature-type tsd-kind-interface">Logger</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/core/logger.ts#L12">src/core/logger.ts:12</a></li></ul></aside></div></li></ul></section></section></details></div>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/core/logger.ts#L25">src/core/logger.ts:25</a></li></ul></aside></div></li></ul></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

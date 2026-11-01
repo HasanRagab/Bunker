@@ -2,6 +2,12 @@ import { z } from "zod";
 import { createLogger, type Logger } from "../core/logger";
 import { err, ok, type Result } from "../core/result";
 
+/** Serialized job stored by a queue adapter.
+ * @example
+ * ```ts
+ * const job: QueuedJob = { id: "1", name: "cleanup", payload: {}, attempts: 0, maxAttempts: 3, retryDelayMs: 1_000, runAt: Date.now() };
+ * ```
+ */
 export interface QueuedJob {
   readonly id: string;
   readonly name: string;
@@ -14,6 +20,12 @@ export interface QueuedJob {
   readonly requestId?: string;
 }
 
+/** Pluggable storage contract used by queue workers.
+ * @example
+ * ```ts
+ * const store: QueueStore = memoryQueue();
+ * ```
+ */
 export interface QueueStore {
   enqueue(job: QueuedJob): Promise<void>;
   claim(now: number, visibilityTimeoutMs: number): Promise<QueuedJob | null>;
@@ -22,13 +34,26 @@ export interface QueueStore {
   remove(id: string): Promise<void>;
 }
 
+/** Context supplied to a job handler.
+ * @example
+ * ```ts
+ * const context: JobContext = { id: "job-1", attempt: 1 };
+ * ```
+ */
 export interface JobContext {
   readonly id: string;
   readonly requestId?: string;
   readonly attempt: number;
 }
 
-/** @deprecated Use {@link memoryQueue}. */
+/**
+ * Legacy class-based in-memory queue store.
+ * @deprecated Use {@link memoryQueue}.
+ * @example
+ * ```ts
+ * const store = new MemoryQueueStore();
+ * ```
+ */
 export class MemoryQueueStore implements QueueStore {
   #jobs: QueuedJob[] = [];
   #processing = new Map<string, { job: QueuedJob; leaseUntil: number }>();
@@ -70,11 +95,23 @@ export class MemoryQueueStore implements QueueStore {
   }
 }
 
-/** Create a process-local job queue store. */
+/**
+ * Create a process-local job queue store.
+ * @example
+ * ```ts
+ * const queue = createQueue(memoryQueue());
+ * ```
+ */
 export function memoryQueue(): MemoryQueueStore {
   return new MemoryQueueStore();
 }
 
+/** Typed job metadata and validated handler contract.
+ * @example
+ * ```ts
+ * const cleanup: JobDefinition<{ id: string }> = defineJob("cleanup", z.object({ id: z.string() }), async () => {});
+ * ```
+ */
 export interface JobDefinition<Payload> {
   readonly name: string;
   readonly schema: z.ZodType<Payload>;
@@ -85,6 +122,13 @@ export interface JobDefinition<Payload> {
   readonly backoff?: { readonly factor: number; readonly maxDelayMs: number };
 }
 
+/**
+ * Define a typed job with a Zod payload schema and retry policy.
+ * @example
+ * ```ts
+ * const email = defineJob("email", z.object({ to: z.string() }), async ({ to }) => sendEmail(to));
+ * ```
+ */
 export function defineJob<Payload>(
   name: string,
   schema: z.ZodType<Payload>,
@@ -127,6 +171,14 @@ export function defineJob<Payload>(
   };
 }
 
+/**
+ * Create a queue facade and worker over a pluggable store.
+ * @example
+ * ```ts
+ * const queue = createQueue(memoryQueue());
+ * const result = await queue.enqueue(email, { to: "user@example.test" });
+ * ```
+ */
 export function createQueue(
   store: QueueStore,
   options: {

@@ -1,10 +1,24 @@
 import { err, ok, type Result } from "../core/result";
 
+/**
+ * Parsed multipart fields and accepted file values.
+ * @example
+ * ```ts
+ * const result: UploadResult = { fields: {}, files: [] };
+ * ```
+ */
 export interface UploadResult {
   readonly fields: Readonly<Record<string, string>>;
   readonly files: readonly File[];
 }
 
+/**
+ * Parse multipart form values while enforcing size, count, and MIME limits.
+ * @example
+ * ```ts
+ * const upload = await parseUploads(request, { maxBytes: 5_000_000, allowedTypes: ["image/png"] });
+ * ```
+ */
 export async function parseUploads(
   request: Request,
   options: { maxBytes: number; maxFiles?: number; allowedTypes?: readonly string[] },

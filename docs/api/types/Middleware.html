@@ -11,7 +11,7 @@
 <li><a href="" aria-current="page">Middleware</a></li></ul>
 <h1>Type Alias Middleware&lt;In, Add&gt;</h1></div>
 <div class="tsd-signature"><span class="tsd-kind-type-alias">Middleware</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">ctx</span><span class="tsd-signature-symbol">:</span> <a class="tsd-signature-type tsd-kind-type-parameter" href="#in">In</a><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <a href="Awaitable.html" class="tsd-signature-type tsd-kind-type-alias">Awaitable</a><span class="tsd-signature-symbol">&lt;</span><a class="tsd-signature-type tsd-kind-type-parameter" href="#add">Add</a><span class="tsd-signature-symbol">&gt;</span></div>
-<div class="tsd-comment tsd-typography"><p>Middleware returns the props it adds to the context. Throw to abort.</p>
+<div class="tsd-comment tsd-typography"><p>Middleware that adds typed context fields or throws to abort the request.</p>
 </div>
 <section class="tsd-panel">
 <h4>Type Parameters</h4>
@@ -29,9 +29,15 @@
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li><span><span class="tsd-kind-parameter">ctx</span>: <a class="tsd-signature-type tsd-kind-type-parameter" href="#in">In</a></span></li></ul></div>
-<h4 class="tsd-returns-title">Returns <a href="Awaitable.html" class="tsd-signature-type tsd-kind-type-alias">Awaitable</a><span class="tsd-signature-symbol">&lt;</span><a class="tsd-signature-type tsd-kind-type-parameter" href="#add">Add</a><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
+<h4 class="tsd-returns-title">Returns <a href="Awaitable.html" class="tsd-signature-type tsd-kind-type-alias">Awaitable</a><span class="tsd-signature-symbol">&lt;</span><a class="tsd-signature-type tsd-kind-type-parameter" href="#add">Add</a><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">addUser</span><span class="hl-1">: </span><span class="hl-6">Middleware</span><span class="hl-1">&lt;</span><span class="hl-6">BaseCtx</span><span class="hl-1">, { </span><span class="hl-5">user</span><span class="hl-1">: { </span><span class="hl-5">id</span><span class="hl-1">: </span><span class="hl-6">string</span><span class="hl-1"> } }&gt; =</span><br/><span class="hl-1">  () </span><span class="hl-0">=&gt;</span><span class="hl-1"> ({ </span><span class="hl-5">user:</span><span class="hl-1"> { </span><span class="hl-5">id:</span><span class="hl-1"> </span><span class="hl-4">&quot;u1&quot;</span><span class="hl-1"> } });</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/b13d58d09a20aa5abfc6a780a9c0a057b36a1294/src/http/router.ts#L26">src/http/router.ts:26</a></li></ul></aside></div>
+<li>Defined in <a href="https://github.com/HasanRagab/Bunker/blob/main/src/http/router.ts#L58">src/http/router.ts:58</a></li></ul></aside></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

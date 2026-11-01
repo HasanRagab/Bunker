@@ -3,6 +3,15 @@ import type { PubSub } from "../infra/pubsub";
 
 type Socket = Bun.ServerWebSocket<undefined>;
 
+/**
+ * Validate WebSocket messages with Zod using Bun's native WebSocket handler.
+ * @example
+ * ```ts
+ * const route = websocketRoute(z.object({ text: z.string() }), {
+ *   message: (_socket, value) => console.log(value.text),
+ * });
+ * ```
+ */
 export function websocketRoute<S extends z.ZodType>(
   schema: S,
   handlers: {
@@ -41,6 +50,14 @@ export function websocketRoute<S extends z.ZodType>(
   };
 }
 
+/**
+ * Fan out a typed pub/sub event to connected WebSocket clients.
+ * @example
+ * ```ts
+ * const fanout = createWebSocketFanout(events, "user.updated");
+ * await fanout.attach();
+ * ```
+ */
 export function createWebSocketFanout<Events extends { [K in keyof Events]: unknown }, Event extends keyof Events>(
   pubsub: PubSub<Events>,
   event: Event,

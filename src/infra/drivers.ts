@@ -6,7 +6,13 @@ import { memoryQueue, type QueueStore } from "./jobs";
 import { memoryRateLimit, type RateLimitStore } from "./rate-limit";
 import { redisCache, redisPubSub, redisQueue, redisRateLimit, type RedisClient } from "./redis";
 
-/** Related persistence and messaging drivers selected as one application bundle. */
+/**
+ * Related persistence and messaging drivers selected as one application bundle.
+ * @example
+ * ```ts
+ * const drivers: DriverBundle = memoryDrivers();
+ * ```
+ */
 export interface DriverBundle {
   readonly kind: "memory" | "redis";
   readonly cache: CacheStore;
@@ -68,8 +74,29 @@ export interface RedisDriverClients {
  * const drivers = await redisDrivers(process.env.REDIS_URL!);
  * ```
  */
+/**
+ * Create Redis drivers from already-connected clients.
+ * @example
+ * ```ts
+ * const drivers = redisDrivers({ client, publisher, subscriber });
+ * ```
+ */
 export function redisDrivers(clients: RedisDriverClients): DriverBundle;
+/**
+ * Connect a Redis driver bundle using a Redis URL.
+ * @example
+ * ```ts
+ * const drivers = await redisDrivers("redis://localhost:6379");
+ * ```
+ */
 export function redisDrivers(url: string): Promise<DriverBundle>;
+/**
+ * Select the driver bundle overload for clients or a Redis URL.
+ * @example
+ * ```ts
+ * const drivers = await redisDrivers(redisUrl);
+ * ```
+ */
 export function redisDrivers(clientsOrUrl: RedisDriverClients | string): DriverBundle | Promise<DriverBundle> {
   if (typeof clientsOrUrl === "string") return connectRedisDrivers(clientsOrUrl);
   return createRedisDrivers(clientsOrUrl);

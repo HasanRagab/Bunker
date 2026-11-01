@@ -1,7 +1,20 @@
 import { err, ok, type Result } from "../core/result";
 import type { Awaitable } from "../core/types";
 
+/** Process roles supported by `startRole`.
+ * @example
+ * ```ts
+ * const role: ServiceRole = "worker";
+ * ```
+ */
 export type ServiceRole = "web" | "worker" | "all";
+
+/** Startup task that may return a cleanup callback.
+ * @example
+ * ```ts
+ * const task: RoleTask = async () => async () => closeWorker();
+ * ```
+ */
 export type RoleTask = () => Awaitable<void | (() => Awaitable<void>)>;
 
 /**
@@ -18,6 +31,14 @@ export function parseRole(value: string | undefined = Bun.env.ROLE): Result<Serv
     : err(new TypeError(`Invalid ROLE "${role}"; set ROLE to "web", "worker", or "all".`));
 }
 
+/**
+ * Start tasks for the selected role and return reverse-order cleanup.
+ * @example
+ * ```ts
+ * const stop = await startRole("worker", { worker: startQueue });
+ * await stop();
+ * ```
+ */
 export async function startRole(
   role: ServiceRole,
   tasks: { web?: RoleTask; worker?: RoleTask },

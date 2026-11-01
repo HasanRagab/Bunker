@@ -14,6 +14,13 @@ type ClientInput<C extends RouteContract> =
 type InputArgs<I> = keyof I extends never ? [] : [input: I];
 type Fetcher = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
+/**
+ * Failure returned by a typed API client.
+ * @example
+ * ```ts
+ * const failure: ApiClientError = { message: "Not found", status: 404 };
+ * ```
+ */
 export interface ApiClientError {
   readonly message: string;
   readonly status?: number;
@@ -23,6 +30,11 @@ export interface ApiClientError {
 /**
  * Create a typed client from a router contract. Assign each route registration
  * (`router = router.get(...)`) so TypeScript can accumulate its route types.
+ * @example
+ * ```ts
+ * const client = createClient("https://api.example.test", api);
+ * const user = await client.request("GET", "/users/:id", { params: { id: "u1" } });
+ * ```
  */
 export function createClient<Ctx extends BaseCtx, Routes extends RouteMap, Prefix extends string>(
   baseUrl: string,

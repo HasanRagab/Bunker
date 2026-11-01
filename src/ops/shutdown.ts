@@ -2,6 +2,14 @@ import { err, ok, type Result } from "../core/result";
 
 type Cleanup = () => void | Promise<void>;
 
+/**
+ * Coordinate request draining, task stops, server closure, and cleanup.
+ * @example
+ * ```ts
+ * const shutdown = createShutdown({ timeoutMs: 20_000 });
+ * shutdown.register(() => database.close());
+ * ```
+ */
 export function createShutdown(options: {
   timeoutMs?: number;
   onError?: (error: Error) => void;
