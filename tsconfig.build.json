@@ -9,5 +9,5 @@
     "sourceMap": true
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist", "test", "example", "scripts"]
+  "exclude": ["node_modules", "dist", "test", "example", "scripts", "docs"]
 }

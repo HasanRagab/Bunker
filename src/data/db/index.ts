@@ -1,7 +1,6 @@
 import { Database, type SQLQueryBindings } from "bun:sqlite";
 import { z } from "zod";
-import { err, ok, type Result } from "../result";
-import type { BaseCtx, Middleware } from "../http/router";
+import { err, ok, type Result } from "../../core/result";
 
 export type DbError = Error;
 
@@ -100,10 +99,6 @@ export function createRepository<S extends z.ZodObject, Id extends SQLQueryBindi
       }
     },
   };
-}
-
-export function withDatabase(db: Database): Middleware<BaseCtx, { db: Database }> {
-  return () => ({ db });
 }
 
 function assertIdentifier(value: string): void {

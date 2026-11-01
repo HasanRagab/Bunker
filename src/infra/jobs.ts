@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { err, ok, type Result } from "./result";
+import { err, ok, type Result } from "../core/result";
 
 export interface QueuedJob {
   readonly id: string;

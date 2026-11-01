@@ -1,4 +1,4 @@
-import type { RedisClient } from "./redis";
+import type { RedisClient } from "./redis-client";
 
 export interface LockLease {
   release(): Promise<void>;

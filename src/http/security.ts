@@ -1,16 +1,3 @@
-import { HttpError } from "./errors";
-import type { BaseCtx } from "./http/router";
-import type { Middleware } from "./http/router";
-
-export function requireRole<Role extends string, User extends { role: string }>(
-  role: Role,
-): Middleware<BaseCtx & { user: User }, { user: User & { role: Role } }> {
-  return ({ user }) => {
-    if (user.role !== role) throw HttpError.forbidden("Insufficient role");
-    return { user: user as User & { role: Role } };
-  };
-}
-
 export function withSecurityHeaders(
   handler: (req: Request) => Promise<Response>,
   headers: Record<string, string> = {

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { err, ok, type Result } from "../result";
+import { err, ok, type Result } from "../core/result";
 import type { BaseCtx, PathParams, RouteContract, RouteMap, Router } from "./router";
 
 type PathsFor<R, M extends string> = { [K in keyof R]: K extends `${M} ${infer P}` ? P : never }[keyof R];

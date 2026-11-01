@@ -1,5 +1,5 @@
-import { err, ok, type Result } from "./result";
-import type { Awaitable } from "./types";
+import { err, ok, type Result } from "../core/result";
+import type { Awaitable } from "../core/types";
 
 export type ServiceRole = "web" | "worker" | "all";
 export type RoleTask = () => Awaitable<void | (() => Awaitable<void>)>;

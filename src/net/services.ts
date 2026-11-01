@@ -1,7 +1,7 @@
 import { createConnection, createServer, type Socket, type Server } from "node:net";
-import type { BaseCtx, RouteMap, Router } from "./http/router";
-import { createClient } from "./http/client";
-import type { RedisClient } from "./redis";
+import type { BaseCtx, RouteMap, Router } from "../http/router";
+import { createClient } from "../http/client";
+import type { RedisClient } from "../infra/redis-client";
 
 export interface ServiceInstance {
   readonly name: string;

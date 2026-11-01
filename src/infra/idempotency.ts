@@ -1,4 +1,4 @@
-import { HttpError } from "./errors";
+import { HttpError } from "../core/errors";
 import type { CacheStore } from "./cache";
 
 interface StoredResponse {

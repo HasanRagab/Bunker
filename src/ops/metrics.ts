@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { BaseCtx, RouteMap, Router } from "./http/router";
+import type { BaseCtx, RouteMap, Router } from "../http/router";
 
 type FetchHandler = (request: Request) => Promise<Response>;
 

@@ -1,30 +1,20 @@
 import { Database } from "bun:sqlite";
 import { drizzle, type BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import { migrate as drizzleMigrate } from "drizzle-orm/bun-sqlite/migrator";
-import type { BaseCtx, Middleware } from "../http/router";
-import { err, ok, type Result } from "../result";
-import * as defaultSchema from "./schema";
+import { err, ok, type Result } from "../../core/result";
 
 export type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 
-export function createDrizzleDatabase(client: Database, options?: { logger?: boolean }):
-  BunSQLiteDatabase<typeof defaultSchema.schema> & { $client: Database };
-export function createDrizzleDatabase<Schema extends Record<string, unknown>>(
+export function createDrizzleDatabase<Schema extends Record<string, unknown> = Record<string, never>>(
   client: Database,
-  options: { schema: Schema; logger?: boolean },
+  options?: { schema?: Schema; logger?: boolean },
 ): BunSQLiteDatabase<Schema> & { $client: Database };
 export function createDrizzleDatabase(
   client: Database,
   options: { schema?: Record<string, unknown>; logger?: boolean } = {},
 ): BunSQLiteDatabase<Record<string, unknown>> & { $client: Database } {
-  const { schema = defaultSchema.schema, logger = false } = options;
-  return drizzle({ client, schema, logger });
-}
-
-export function withDrizzleDatabase<DB extends BunSQLiteDatabase<Record<string, unknown>>>(
-  db: DB,
-): Middleware<BaseCtx, { db: DB }> {
-  return () => ({ db });
+  const { schema, logger = false } = options;
+  return drizzle({ client, ...(schema === undefined ? {} : { schema }), logger });
 }
 
 export function migrateDatabase<Schema extends Record<string, unknown>>(

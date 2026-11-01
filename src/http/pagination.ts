@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { err, ok, type Result } from "./result";
+import { err, ok, type Result } from "../core/result";
 
 export const paginationQuery = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),

@@ -34,7 +34,6 @@ import {
   openDatabase,
   createDrizzleDatabase,
   migrateDatabase,
-  users as drizzleUsers,
   paginateArray,
   parseUploads,
   rateLimit,
@@ -46,6 +45,7 @@ import {
   serveTcpService,
   type RedisClient,
 } from "../src";
+import { users as drizzleUsers, schema as drizzleSchema } from "../example/db/schema";
 
 class SharedFakeRedis implements RedisClient {
   readonly values = new Map<string, string>();
@@ -147,8 +147,8 @@ describe("Drizzle database", () => {
   it("applies generated migrations and performs typed CRUD", () => {
     const client = new Database(":memory:", { strict: true });
     try {
-      const db = createDrizzleDatabase(client);
-      const migrationsFolder = fileURLToPath(new URL("../drizzle", import.meta.url));
+      const db = createDrizzleDatabase(client, { schema: drizzleSchema });
+      const migrationsFolder = fileURLToPath(new URL("../example/drizzle", import.meta.url));
       expect(migrateDatabase(db, migrationsFolder)).toEqual({ ok: true, value: undefined });
       expect(migrateDatabase(db, migrationsFolder)).toEqual({ ok: true, value: undefined });
 

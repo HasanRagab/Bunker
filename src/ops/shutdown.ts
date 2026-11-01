@@ -1,4 +1,4 @@
-import { err, ok, type Result } from "./result";
+import { err, ok, type Result } from "../core/result";
 
 type Cleanup = () => void | Promise<void>;
 

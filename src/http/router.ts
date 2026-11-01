@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { HttpError } from "../errors";
-import { createLogger, type Logger } from "../logger";
-import type { Awaitable } from "../types";
+import { HttpError } from "../core/errors";
+import { createLogger, type Logger } from "../core/logger";
+import type { Awaitable } from "../core/types";
 
 /* ---------- Types ---------- */
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { PubSub } from "../pubsub";
+import type { PubSub } from "../infra/pubsub";
 
 type Socket = Bun.ServerWebSocket<undefined>;
 

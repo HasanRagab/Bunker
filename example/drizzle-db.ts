@@ -1,18 +1,11 @@
 import { eq } from "drizzle-orm";
+import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import { Database } from "bun:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import {
-  createDrizzleDatabase,
-  insertUserSchema,
-  migrateDatabase,
-  posts,
-  schema,
-  updateUserSchema,
-  users,
-  withDrizzleDatabase,
-} from "../src";
-import { Router, type BunSQLiteDatabase } from "../src";
+import { Router, withDrizzleDatabase } from "../src";
+import { createDrizzleDatabase, migrateDatabase } from "../src/data";
+import { insertUserSchema, posts, schema, updateUserSchema, users } from "./db/schema";
 import { z } from "zod";
 
 export type AppDatabase = BunSQLiteDatabase<typeof schema>;
@@ -24,7 +17,7 @@ export function createAppDatabase(path = "./data/app.sqlite") {
   return { db, close: () => client.close() };
 }
 
-export function migrateAppDatabase(path = "./data/app.sqlite", migrationsFolder = "./drizzle") {
+export function migrateAppDatabase(path = "./data/app.sqlite", migrationsFolder = "./example/drizzle") {
   mkdirSync(dirname(path), { recursive: true });
   const client = new Database(path, { create: true, strict: true });
   try {

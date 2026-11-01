@@ -1,5 +1,5 @@
-import { HttpError } from "../errors";
-import type { Awaitable } from "../types";
+import { HttpError } from "../core/errors";
+import type { Awaitable } from "../core/types";
 import type { BaseCtx, Middleware } from "./router";
 
 /** Bearer auth. `verify` returns your user type or null; the type flows into ctx.user. */

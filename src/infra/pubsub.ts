@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { Awaitable } from "./types";
+import type { Awaitable } from "../core/types";
 
 export type EventSchemas = Record<string, z.ZodType>;
 export type EventPayloads<Schemas extends EventSchemas> = { [K in keyof Schemas]: z.output<Schemas[K]> };

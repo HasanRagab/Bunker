@@ -1,5 +1,5 @@
-import type { Router, BaseCtx, RouteMap } from "./http/router";
-import type { Awaitable } from "./types";
+import type { Router, BaseCtx, RouteMap } from "../http/router";
+import type { Awaitable } from "../core/types";
 
 export type HealthCheck = () => Awaitable<void | boolean>;
 
