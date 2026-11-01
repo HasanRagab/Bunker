@@ -29,26 +29,24 @@ build, and this package-content check for each pull request to `main` or
 
 ## First publish setup
 
-The package already has a published release, so configure npm Trusted
-Publishing once to let GitHub Actions publish without a long-lived npm token:
+The release workflow uses an npm granular access token, like the
+[`api-geno`](https://github.com/HasanRagab/api-geno) release flow:
 
-1. Open the [`@2hasan2/bunker` package settings](https://www.npmjs.com/package/@2hasan2/bunker/access).
-2. Under **Trusted Publisher**, add **GitHub Actions** with:
-   - Organization or user: `HasanRagab`
-   - Repository: `Bunker`
-   - Workflow filename: `release.yml`
-   - Environment: leave blank
-   - Allow direct `npm publish`
-3. Ensure GitHub Actions is allowed to create pull requests in the repository
+1. In npm, open **Account → Access Tokens → Generate New Token** and choose a
+   granular token.
+2. Enable **Bypass two-factor authentication**.
+3. Give it **Read and write (publish and stage)** access for
+   `@2hasan2/bunker` (or the `@2hasan2` scope), and set an appropriate
+   expiration.
+4. Copy the token and save it as the GitHub Actions repository secret
+   `NPM_TOKEN` under **Settings → Secrets and variables → Actions**.
+5. Ensure GitHub Actions is allowed to create pull requests in the repository
    settings.
 
-The workflow requests the GitHub OIDC token with `id-token: write` and uses
-Node.js 22.14+ and npm 11.5.1+. No `NPM_TOKEN` Actions secret is needed. Do not
-add an OTP or npm access token to the workflow.
-
-The first Trusted Publisher configuration must complete a successful publish
-within npm's validation window. After saving the npm publisher settings, rerun
-the failed Release workflow or push a new commit to `main`.
+The bypass-2FA option is required for a CI token; otherwise npm returns
+`EOTP`. Never put the token in source control or workflow YAML. If a failed
+workflow reports `ENEEDAUTH`, verify that the secret was replaced with the
+new granular token and that it has publish access to this package.
 
 ## Release flow
 
@@ -64,12 +62,13 @@ the failed Release workflow or push a new commit to `main`.
 4. GitHub Actions opens or updates a release pull request with version and
 changelog changes.
 5. Review and merge the release pull request. On the resulting `main` push,
-the workflow publishes through npm Trusted Publishing.
+the workflow publishes the package using `NPM_TOKEN`.
 
-For the first release under this npm scope, the included patch Changeset bumps
-the current `0.1.1` metadata to `0.1.2`. For future changes, Changesets
-prompts for patch, minor, or major. Use patch for a compatible fix, minor for a
-backward-compatible feature, and major for a breaking public API change.
+The first release Changeset has already been merged and the package metadata
+is now `0.1.2`; after updating `NPM_TOKEN`, rerun the latest failed Release
+workflow. For future changes, Changesets prompts for patch, minor, or major.
+Use patch for a compatible fix, minor for a backward-compatible feature, and
+major for a breaking public API change.
 
 To inspect the package locally before merging:
 

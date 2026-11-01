@@ -9,7 +9,6 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 permissions:
   contents: write
   pull-requests: write
-  id-token: write
 
 jobs:
   release:
@@ -21,14 +20,6 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-
-      - name: Set up Node.js for npm trusted publishing
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.14.0
-
-      - name: Install npm with trusted publishing support
-        run: npm install --global npm@^11.5.1
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -43,3 +34,4 @@ jobs:
           publish: bun run publish-packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
