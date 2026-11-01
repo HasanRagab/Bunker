@@ -1,0 +1,31 @@
+import { HttpError } from "../errors";
+import type { Awaitable } from "../types";
+import type { BaseCtx, Middleware } from "./router";
+
+/** Bearer auth. `verify` returns your user type or null; the type flows into ctx.user. */
+export function bearerAuth<U extends object>(
+  verify: (token: string) => Awaitable<U | null>,
+): Middleware<BaseCtx, { user: U }> {
+  return async ({ req }) => {
+    const token = req.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1];
+    if (!token) throw HttpError.unauthorized("Missing bearer token");
+    const user = await verify(token);
+    if (!user) throw HttpError.unauthorized("Invalid token");
+    return { user };
+  };
+}
+
+/** Wrap a fetch handler with permissive-by-config CORS. */
+export function withCors(
+  handler: (req: Request) => Promise<Response>,
+  opts: { origin?: string; methods?: string; headers?: string } = {},
+) {
+  const { origin = "*", methods = "GET,POST,PUT,PATCH,DELETE,OPTIONS", headers = "content-type,authorization" } = opts;
+  const apply = (res: Response) => {
+    res.headers.set("access-control-allow-origin", origin);
+    res.headers.set("access-control-allow-methods", methods);
+    res.headers.set("access-control-allow-headers", headers);
+    return res;
+  };
+  return async (req: Request) => (req.method === "OPTIONS" ? apply(new Response(null, { status: 204 })) : apply(await handler(req)));
+}
