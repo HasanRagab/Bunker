@@ -5,4 +5,4 @@ export * from "./data/index";
 export * from "./infra/index";
 export * from "./ops/index";
 export * from "./net/index";
-export * from "./app";
+export { createApp, createTestApp } from "./app";

@@ -2,7 +2,7 @@ import { createLogger, type Logger } from "./core/logger";
 import { createServiceRegistry } from "./core/services";
 import { createQueue, type JobContext } from "./infra/jobs";
 import { createScheduler } from "./infra/scheduler";
-import type { DriverBundle } from "./infra/drivers";
+import { memoryDrivers, type DriverBundle } from "./infra/drivers";
 import type { EventSchemas, EventPayloads, PubSub } from "./infra/pubsub";
 import { startRole, parseRole, type ServiceRole } from "./auth/role";
 import { createRequestMetrics, metricsRoute } from "./ops/metrics";
@@ -10,6 +10,7 @@ import { createShutdown } from "./ops/shutdown";
 import { healthRoutes, type HealthCheck } from "./ops/health";
 import { withCors } from "./http/middleware";
 import { Router, type BaseCtx, type RouteMap } from "./http/router";
+import { createTestApp as createRouterTestApp, createTestRequester, type TestRequestHelpers } from "./http/testing";
 import { serve } from "./http/server";
 import { startModules } from "./http/module";
 import type { ModuleLifecycle, ModuleRouteMetadata, ModuleRouteResult } from "./http/module";
@@ -44,6 +45,18 @@ type UnionToIntersection<Values> =
 type AppRoutes<Modules extends ModuleList> =
   [Modules[number]] extends [never] ? {} : UnionToIntersection<RoutesOf<Modules[number]>> & object;
 type AppRouter<Modules extends ModuleList> = Router<BaseCtx, AppRoutes<Modules>, "">;
+type AppInstance<Modules extends ModuleList, Env extends object> = {
+  readonly env: Env;
+  readonly drivers: DriverBundle;
+  readonly logger: Logger;
+  readonly services: ReturnType<typeof createServiceRegistry>;
+  readonly router: AppRouter<Modules>;
+  readonly pubsub: PubSub<EventPayloads<AppEventSchemas<Modules>>>;
+  readonly metrics: ReturnType<typeof createRequestMetrics> | undefined;
+  readonly fetch: (request: Request) => Promise<Response>;
+  start(): Promise<void>;
+  stop(): Promise<void>;
+};
 
 /**
  * Compose the toolkit's HTTP, infrastructure, and operations helpers into an application. Pass
@@ -71,18 +84,7 @@ type AppRouter<Modules extends ModuleList> = Router<BaseCtx, AppRoutes<Modules>,
  */
 export function createApp<const Options extends AppOptionsInput>(
   options: Options & (Options["modules"] extends ModuleList ? unknown : never),
-): {
-  readonly env: Options["env"];
-  readonly drivers: DriverBundle;
-  readonly logger: Logger;
-  readonly services: ReturnType<typeof createServiceRegistry>;
-  readonly router: AppRouter<AppModules<Options>>;
-  readonly pubsub: PubSub<EventPayloads<AppEventSchemas<AppModules<Options>>>>;
-  readonly metrics: ReturnType<typeof createRequestMetrics> | undefined;
-  readonly fetch: (request: Request) => Promise<Response>;
-  start(): Promise<void>;
-  stop(): Promise<void>;
-} {
+): AppInstance<AppModules<Options>, Options["env"]> {
   const modules = options.modules as ModuleList;
   const instanceId = options.instanceId ?? crypto.randomUUID();
   const logger = options.logger ?? createLogger({ instanceId });
@@ -209,6 +211,49 @@ export function createApp<const Options extends AppOptionsInput>(
   };
 }
 
+/**
+ * Create synthetic request helpers from a router or a started memory-backed app.
+ * @example
+ * ```ts
+ * const testApp = await createTestApp({ modules: [usersModule] });
+ * const response = await testApp.req.get("/users");
+ * await testApp.stop();
+ * ```
+ */
+export function createTestApp<
+  Ctx extends BaseCtx,
+  Routes extends RouteMap,
+  Prefix extends string,
+>(router: Router<Ctx, Routes, Prefix>, baseUrl?: string): TestRequestHelpers;
+export function createTestApp<const Options extends TestAppOptionsInput>(
+  options: Options & (Options["modules"] extends ModuleList ? unknown : never),
+): Promise<TestAppInstance<Options>>;
+export function createTestApp(
+  input: Router<BaseCtx, RouteMap, string> | TestAppOptionsInput,
+  baseUrl?: string,
+): TestRequestHelpers | Promise<TestRequestHelpers> {
+  if (input instanceof Router) return createRouterTestApp(input, baseUrl);
+  return createModuleTestApp(input);
+}
+
+async function createModuleTestApp(options: TestAppOptionsInput): Promise<TestRequestHelpers> {
+  const app = createApp({
+    env: options.env ?? {},
+    drivers: memoryDrivers(options.logger === undefined ? {} : { logger: options.logger }),
+    modules: options.modules as ModuleList,
+    role: false,
+    health: options.health ?? false,
+    metrics: options.metrics ?? false,
+    shutdown: false,
+    ...(options.cors === undefined ? {} : { cors: options.cors }),
+    ...(options.logger === undefined ? {} : { logger: options.logger }),
+    ...(options.instanceId === undefined ? {} : { instanceId: options.instanceId }),
+  });
+  await app.start();
+  const { start: _start, ...runningApp } = app;
+  return { ...runningApp, ...createTestRequester(app.fetch) };
+}
+
 type AppEventSchemas<Modules extends ModuleList> = [Modules[number]] extends [never]
   ? Record<never, never>
   : UnionToIntersection<EventSchemasOf<Modules[number]>> & EventSchemas;
@@ -227,6 +272,17 @@ type AppOptions = {
 };
 type AppOptionsInput = AppOptions & { readonly modules: readonly unknown[] };
 type AppModules<Options> = Options extends { readonly modules: infer Modules extends ModuleList } ? Modules : never;
+type TestAppOptionsInput = {
+  readonly env?: object;
+  readonly modules: readonly unknown[];
+  readonly health?: AppOptions["health"];
+  readonly metrics?: AppOptions["metrics"];
+  readonly cors?: CorsOptions;
+  readonly logger?: Logger;
+  readonly instanceId?: string;
+};
+type TestAppModules<Options> = Options extends { readonly modules: infer Modules extends ModuleList } ? Modules : never;
+type TestAppInstance<Options> = Omit<AppInstance<TestAppModules<Options>, object>, "start"> & TestRequestHelpers;
 
 type EventSchemasOf<Module> = Module extends { readonly events?: infer Events }
   ? Events extends EventSchemas

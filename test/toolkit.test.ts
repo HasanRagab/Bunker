@@ -269,6 +269,25 @@ describe("router integrations", () => {
     expect((await app.fetch(new Request("http://localhost/health"))).status).toBe(503);
   });
 
+  it("creates a memory-backed test app from modules without opening a server", async () => {
+    const users = defineModule({
+      name: "testUsers",
+      routes: (router) =>
+        router.get("/users/:id", {
+          response: z.object({ id: z.string() }),
+          handler: ({ params }) => ({ id: params.id }),
+        }),
+    });
+    const app = await createTestApp({ modules: [users] });
+    expect(app.drivers.kind).toBe("memory");
+    const client = createClient("http://localhost", app.router, {
+      fetcher: (input, init) => app.fetch(new Request(String(input), init)),
+    });
+    const response = await client.request("GET", "/users/:id", { params: { id: "test-user" } });
+    expect(response).toEqual({ ok: true, value: { id: "test-user" } });
+    await app.stop();
+  });
+
   const userSchema = z.object({ id: z.string(), active: z.boolean() });
   const api = Router.create().group("/api").get("/users/:id", {
     query: z.object({ active: z.coerce.boolean() }),
