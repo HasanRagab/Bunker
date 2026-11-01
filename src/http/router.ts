@@ -13,7 +13,7 @@ export type RouteContract<
   B extends Schema = Schema,
   R extends Schema = Schema,
 > = { readonly method: M; readonly path: P; readonly query: Q; readonly body: B; readonly response: R };
-export type RouteMap = Record<string, RouteContract>;
+export type RouteMap = object;
 
 export interface BaseCtx {
   readonly req: Request;

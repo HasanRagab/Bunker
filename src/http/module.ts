@@ -3,6 +3,8 @@ import {
   createServiceRegistry,
   type ServiceToken,
 } from "../core/services";
+import type { JobContext } from "../infra/jobs";
+import type { EventSchemas } from "../infra/pubsub";
 import type { Router, BaseCtx } from "./router";
 
 type ServiceDependencies = Readonly<Record<string, ServiceToken<unknown>>>;
@@ -11,10 +13,43 @@ type ResolvedDependencies<Dependencies extends ServiceDependencies> = {
 };
 type ServiceRegistry = ReturnType<typeof createServiceRegistry>;
 type RouterView = Pick<Router<BaseCtx>, "fetch" | "openAPI" | "validateResponse">;
+declare const moduleRouteResult: unique symbol;
+type RunnableJob = {
+  readonly name: string;
+  readonly run: (payload: unknown, context: JobContext) => Promise<void>;
+};
 type RouteBuilder<
   Dependencies extends ServiceDependencies,
   Prefix extends string,
 > = (router: Router<BaseCtx, {}, Prefix>, dependencies: ResolvedDependencies<Dependencies>) => RouterView;
+
+/**
+ * Type-only metadata used to preserve module route contracts during composition.
+ * @example
+ * ```ts
+ * const module = defineModule({ name: "users", routes: (router) => router });
+ * const routeMetadata: ModuleRouteMetadata = module;
+ * ```
+ */
+export interface ModuleRouteMetadata {
+  readonly [moduleRouteResult]?: object;
+}
+
+/**
+ * Lifecycle contract shared by typed modules.
+ * @example
+ * ```ts
+ * const module = defineModule({ name: "users", routes: (router) => router });
+ * const moduleLifecycle: ModuleLifecycle = module;
+ * ```
+ */
+export interface ModuleLifecycle {
+  readonly name: string;
+  readonly provides: readonly ServiceToken<unknown>[];
+  readonly dependencyTokens: readonly ServiceToken<unknown>[];
+  start(registry: ServiceRegistry): Promise<void>;
+  stop(registry: ServiceRegistry): Promise<void>;
+}
 
 /**
  * A module definition that can be composed into an application.
@@ -28,20 +63,30 @@ export interface ModuleDefinition<
   Dependencies extends ServiceDependencies = ServiceDependencies,
   Prefix extends string = string,
   Routes extends RouteBuilder<Dependencies, Prefix> = RouteBuilder<Dependencies, Prefix>,
-  Jobs extends readonly unknown[] = readonly unknown[],
-  Events extends Readonly<Record<string, unknown>> = Readonly<Record<string, unknown>>,
-> {
-  readonly name: Name;
+  Jobs extends readonly RunnableJob[] = readonly RunnableJob[],
+  Events extends EventSchemas = EventSchemas,
+> extends ModuleLifecycle {
+  readonly [moduleRouteResult]?: ReturnType<Routes>;
   readonly prefix?: Prefix;
   readonly deps: Dependencies;
-  readonly provides: readonly ServiceToken<unknown>[];
-  readonly dependencyTokens: readonly ServiceToken<unknown>[];
   readonly routes: Routes;
   readonly jobs?: Jobs;
   readonly events?: Events;
+  mount(router: Router<BaseCtx, {}, "">, registry: ServiceRegistry): ReturnType<Routes>;
   start(registry: ServiceRegistry): Promise<void>;
   stop(registry: ServiceRegistry): Promise<void>;
 }
+
+/**
+ * Extract a module's router type, including every accumulated route contract.
+ * @example
+ * ```ts
+ * const module = defineModule({ name: "users", routes: (router) => router });
+ * type UserRouter = ModuleRouteResult<typeof module>;
+ * ```
+ */
+export type ModuleRouteResult<Module> =
+  Module extends { readonly [moduleRouteResult]?: infer Result } ? Exclude<Result, undefined> : never;
 
 /**
  * Define a typed application module with route, job, event, and lifecycle metadata.
@@ -62,8 +107,8 @@ export function defineModule<
   Dependencies extends ServiceDependencies = {},
   const Prefix extends string = "",
   Routes extends RouteBuilder<Dependencies, Prefix> = RouteBuilder<Dependencies, Prefix>,
-  Jobs extends readonly unknown[] = readonly [],
-  Events extends Readonly<Record<string, unknown>> = Readonly<Record<never, never>>,
+  Jobs extends readonly RunnableJob[] = readonly [],
+  Events extends EventSchemas = Record<never, never>,
 >(
   definition: {
     name: Name;
@@ -95,6 +140,10 @@ export function defineModule<
     routes: definition.routes,
     ...(definition.jobs === undefined ? {} : { jobs: definition.jobs }),
     ...(definition.events === undefined ? {} : { events: definition.events }),
+    mount: (router, registry) => {
+      const scoped = definition.prefix === undefined ? router : router.group(definition.prefix);
+      return definition.routes(scoped as Router<BaseCtx, {}, Prefix>, resolveDependencies(registry)) as ReturnType<Routes>;
+    },
     start: async (registry) => {
       await definition.onStart?.(resolveDependencies(registry), registry);
     },
@@ -113,11 +162,11 @@ export function defineModule<
  * ```
  */
 export async function startModules(
-  modules: readonly ModuleDefinition[],
+  modules: readonly ModuleLifecycle[],
   registry: ServiceRegistry = createServiceRegistry(),
 ): Promise<{ readonly order: readonly string[]; stop(): Promise<void> }> {
   const ordered = orderModules(modules);
-  const started: ModuleDefinition[] = [];
+  const started: ModuleLifecycle[] = [];
 
   try {
     for (const module of ordered) {
@@ -142,8 +191,8 @@ export async function startModules(
   };
 }
 
-function orderModules(modules: readonly ModuleDefinition[]): ModuleDefinition[] {
-  const providers = new Map<symbol, ModuleDefinition>();
+function orderModules(modules: readonly ModuleLifecycle[]): ModuleLifecycle[] {
+  const providers = new Map<symbol, ModuleLifecycle>();
   for (const module of modules) {
     for (const token of module.provides) {
       const existing = providers.get(token.key);
@@ -153,12 +202,12 @@ function orderModules(modules: readonly ModuleDefinition[]): ModuleDefinition[] 
   }
 
   const remaining = new Set(modules);
-  const ordered: ModuleDefinition[] = [];
+  const ordered: ModuleLifecycle[] = [];
   while (remaining.size) {
     const ready = [...remaining].find((module) =>
       module.dependencyTokens.every((token) => {
         const provider = providers.get(token.key);
-        return !provider || provider === module || !remaining.has(provider);
+        return !provider || !remaining.has(provider);
       }),
     );
     if (!ready) {
@@ -171,7 +220,7 @@ function orderModules(modules: readonly ModuleDefinition[]): ModuleDefinition[] 
   return ordered;
 }
 
-async function stopInReverse(modules: readonly ModuleDefinition[], registry: ServiceRegistry): Promise<unknown[]> {
+async function stopInReverse(modules: readonly ModuleLifecycle[], registry: ServiceRegistry): Promise<unknown[]> {
   const errors: unknown[] = [];
   for (const module of [...modules].reverse()) {
     try {

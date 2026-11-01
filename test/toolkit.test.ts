@@ -16,6 +16,7 @@ import {
   defineService,
   defineModule,
   startModules,
+  createApp,
   memoryDrivers,
   redisDrivers,
   defineJob,
@@ -221,6 +222,51 @@ describe("router integrations", () => {
     expect(lifecycle.order).toEqual(["provider", "consumer"]);
     await lifecycle.stop();
     expect(calls).toEqual(["provider:start", "consumer:start:ready", "consumer:stop", "provider:stop"]);
+  });
+
+  it("composes modules and operational routes without opening a server", async () => {
+    const repositoryToken = defineService<{ find(id: string): { id: string } }>("appRepository");
+    const repositoryModule = defineModule({
+      name: "repository",
+      provides: [repositoryToken],
+      routes: (router) => router,
+      onStart: (_dependencies, registry) => {
+        registry.provide(repositoryToken, { find: (id) => ({ id }) });
+      },
+    });
+    const users = defineModule({
+      name: "users",
+      prefix: "/api",
+      deps: { repository: repositoryToken },
+      routes: (router, { repository }) =>
+        router.get("/users/:id", {
+          response: z.object({ id: z.string() }),
+          handler: ({ params }) => repository.find(params.id),
+        }),
+    });
+    const app = createApp({
+      env: { PORT: 0 },
+      drivers: memoryDrivers(),
+      modules: [users, repositoryModule],
+      role: false,
+    });
+    type AppRoutes = typeof app.router extends Router<infer _Context, infer Routes, infer _Prefix> ? Routes : never;
+    expectTypeOf<AppRoutes["GET /api/users/:id"]["path"]>().toEqualTypeOf<"/api/users/:id">();
+    await app.start();
+
+    const client = createClient("http://localhost", app.router, {
+      fetcher: (input, init) => {
+        if (input instanceof Request) return app.fetch(new Request(input, init));
+        return app.fetch(new Request(typeof input === "string" ? input : input.href, init));
+      },
+    });
+    const response = await client.request("GET", "/api/users/:id", { params: { id: "app-user" } });
+    expect(response.ok && response.value).toEqual({ id: "app-user" });
+    expect((await app.fetch(new Request("http://localhost/health"))).status).toBe(200);
+    expect((await app.fetch(new Request("http://localhost/metrics"))).headers.get("content-type")).toContain("text/plain");
+    expect((await app.fetch(new Request("http://localhost/health"))).headers.get("access-control-allow-origin")).toBeNull();
+    await app.stop();
+    expect((await app.fetch(new Request("http://localhost/health"))).status).toBe(503);
   });
 
   const userSchema = z.object({ id: z.string(), active: z.boolean() });
