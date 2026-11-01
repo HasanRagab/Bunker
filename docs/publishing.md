@@ -29,56 +29,40 @@ build, and this package-content check for each pull request to `main` or
 
 ## First publish setup
 
-1. Confirm your npm account `2hasan2` owns or can publish under the `@2hasan2` scope.
-2. Authenticate locally with `npm login`.
-3. Check that `npm whoami` reports the account with publish permission.
+1. Confirm your npm account `2hasan2` owns or can publish under the
+   `@2hasan2` scope.
+2. Create an npm automation token with permission to publish packages.
+3. Add it to the GitHub repository as the Actions secret `NPM_TOKEN`.
+4. Ensure GitHub Actions can create pull requests for the repository.
 
-The package is configured for public scoped publishing. No npm token is stored
-in the repository or needed in CI. Keep your local npm credentials private.
+The package is configured for public scoped publishing. The automation token is
+used by the release workflow and must not be committed to the repository. Do
+not use an interactive OTP login token for automation.
 
 ## Release flow
 
-1. Start from a clean, reviewed branch and commit the changes to release.
-2. Run verification and inspect the package contents:
+1. Make and verify a change. The release workflow runs typecheck, tests, and
+   the package build for each push to `main`.
+2. Add a Changeset describing the user-visible change:
+
+   ```sh
+   bun run changeset
+   ```
+
+3. Commit the changeset with the code and merge it to `main`.
+4. GitHub Actions opens or updates a release pull request with version and
+changelog changes.
+5. Review and merge the release pull request. On the resulting `main` push,
+the workflow publishes the package using `NPM_TOKEN`.
+
+For the first release under this npm scope, the included patch Changeset bumps
+the current `0.1.1` metadata to `0.1.2`. For future changes, Changesets
+prompts for patch, minor, or major. Use patch for a compatible fix, minor for a
+backward-compatible feature, and major for a breaking public API change.
+
+To inspect the package locally before merging:
 
 ```sh
 bun run verify
 npm pack --dry-run
 ```
-
-3. Choose exactly one version increment (this creates a Git commit and tag):
-
-```sh
-npm version patch   # compatible fix, e.g. 0.1.0 -> 0.1.1
-npm version minor   # backwards-compatible feature, e.g. 0.1.0 -> 0.2.0
-npm version major   # breaking API change, e.g. 0.1.0 -> 1.0.0
-```
-
-`npm version` updates `package.json`, creates a local git commit, and tags
-it. It does not update `bun.lock`; that lockfile tracks dependencies, not
-this package's release version. Do not run `npm version` with uncommitted
-changes.
-
-4. Publish the exact version from the tagged commit:
-
-```sh
-npm publish
-```
-
-npm runs the `prepublishOnly` typecheck/tests and `prepack` build hooks.
-
-5. Push the release commit and tag:
-
-```sh
-git push
-git push --tags
-```
-
-If publishing fails, check whether the version reached npm with
-`npm view @2hasan2/bunker version`. If it was not published, you can fix the
-problem and retry that version. If it is already listed, increment to a new
-version; npm does not allow replacing a published version.
-
-For the first release, publish the current `0.1.0` without running
-`npm version`; after the first publish, choose patch/minor/major for each
-release.

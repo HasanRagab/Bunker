@@ -12,7 +12,7 @@ focuses on one task and points to a runnable example or reference page.
 3. [Module map](./module-map.md) — choose a module without needing to know the
    whole toolkit.
 4. [Build and publish](./publishing.md) — understand the ESM build, npm
-   package contents, and manual release process.
+   package contents, and Changesets release process.
 
 ## Add capabilities
 

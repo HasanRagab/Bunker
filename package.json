@@ -48,7 +48,10 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "bun scripts/migrate.ts",
     "db:studio": "drizzle-kit studio",
-    "prepublishOnly": "bun run check && bun test",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "publish-packages": "changeset publish",
+    "prepublishOnly": "bun run verify",
     "prepack": "bun run build"
   },
   "dependencies": {
@@ -57,6 +60,7 @@
     "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.30.0",
     "@types/bun": "latest",
     "drizzle-kit": "^0.31.11",
     "tsc-esm-fix": "^3.1.2",

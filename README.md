@@ -57,8 +57,8 @@ bun test
 Database scripts: `bun run db:generate` creates a migration from the configured
 Drizzle schema; `bun run db:migrate` applies committed migrations.
 
-The npm package build is `bun run build`. For manual versioning and publishing
-steps, see the
+The npm package build is `bun run build`. For the Changesets GitHub release
+flow and npm token setup, see the
 [publishing guide](./docs/publishing.md).
 
 ## Guiding conventions
