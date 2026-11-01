@@ -80,6 +80,7 @@
     "check": "tsc -p .",
     "test": "bun test",
     "build": "tsc -p tsconfig.build.json && tsc-esm-fix --tsconfig tsconfig.build.json",
+    "docs": "typedoc --entryPoints src/index.ts --out docs/api --readme none",
     "verify": "bun run check && bun test && bun run build",
     "pack:check": "npm pack --dry-run",
     "db:generate": "drizzle-kit generate --config example/drizzle.config.ts",
@@ -118,6 +119,7 @@
     "drizzle-zod": "^0.8.3",
     "redis": "^6.3.1",
     "tsc-esm-fix": "^3.1.2",
+    "typedoc": "^0.28.20",
     "typescript": "^5.6.0"
   }
 }

@@ -1,83 +1,57 @@
-# Build and publish
+# Publishing
 
-This repository is prepared to publish the public npm package
-[`@2hasan2/bunker`](https://www.npmjs.com/package/@2hasan2/bunker). The
-package targets Bun because APIs such as `bun:sqlite`, `Bun.serve`, and
-`Bun.password` are part of its public runtime surface.
+The package is built as ESM with declarations in `dist/`. Consumers should use
+the public subpaths rather than deep imports:
 
-## What the build produces
+| Import | Entry |
+|---|---|
+| `@2hasan2/bunker` | App composition and complete root API |
+| `@2hasan2/bunker/core` | Config, results, errors, services, and logging |
+| `@2hasan2/bunker/http` | Router, middleware, typed client, and HTTP helpers |
+| `@2hasan2/bunker/auth` | JWT, password, and role helpers |
+| `@2hasan2/bunker/data` | SQLite repository |
+| `@2hasan2/bunker/data/drizzle` | Optional Drizzle adapter |
+| `@2hasan2/bunker/infra` | Cache, jobs, drivers, and coordination |
+| `@2hasan2/bunker/ops` | Health, metrics, and shutdown |
+| `@2hasan2/bunker/net` | Outbound HTTP and service discovery |
 
-```sh
-bun run build
-```
+`package.json` exposes only these entry points, so unsupported internal deep
+imports are blocked. Drizzle dependencies are optional peers; `redis` is also
+optional unless a Redis driver bundle is used.
 
-TypeScript compiles `src/` into `dist/` as ESM JavaScript with declaration and
-source-map files. `tsc-esm-fix` adds `.js` extensions to emitted relative ESM
-imports. The package `exports` map points consumers to `dist/index.js` and
-`dist/index.d.ts`.
-
-Inspect the tarball before publishing:
-
-```sh
-npm pack --dry-run
-```
-
-The package allowlist includes the build, license, README, and guides. It does
-not ship repository examples. Drizzle integrations are optional peer
-dependencies and are exposed only through `@2hasan2/bunker/data/drizzle`;
-consumers that do not use Drizzle do not need to install those peers. CI runs
-typecheck, tests, build, and the package-content check for each pull request.
-
-## First publish setup
-
-The release workflow uses an npm granular access token, like the
-[`api-geno`](https://github.com/HasanRagab/api-geno) release flow:
-
-1. In npm, open **Account → Access Tokens → Generate New Token** and choose a
-   granular token.
-2. Enable **Bypass two-factor authentication**.
-3. Give it **Read and write (publish and stage)** access for
-   `@2hasan2/bunker` (or the `@2hasan2` scope), and set an appropriate
-   expiration.
-4. Copy the token and save it as the GitHub Actions repository secret
-   `NPM_TOKEN` under **Settings → Secrets and variables → Actions**. The
-   release workflow configures npm's registry authentication and passes this
-   secret as `NODE_AUTH_TOKEN` when Changesets publishes.
-5. Ensure GitHub Actions is allowed to create pull requests in the repository
-   settings.
-
-The bypass-2FA option is required for a CI token; otherwise npm returns
-`EOTP`. Never put the token in source control or workflow YAML. If publishing
-still returns `EOTP`, replace the secret with a newly generated granular token
-that explicitly has **Bypass two-factor authentication** enabled and publish
-access to this package. If a workflow reports `ENEEDAUTH`, verify the secret
-exists and has publish access.
-
-## Release flow
-
-1. Make and verify a change. The release workflow runs typecheck, tests, and
-   the package build for each push to `main`.
-2. Add a Changeset describing the user-visible change:
-
-   ```sh
-   bun run changeset
-   ```
-
-3. Commit the changeset with the code and merge it to `main`.
-4. GitHub Actions opens or updates a release pull request with version and
-changelog changes.
-5. Review and merge the release pull request. On the resulting `main` push,
-the workflow publishes the package using `NPM_TOKEN`.
-
-The first release Changeset has already been merged and the package metadata
-is now `0.1.2`; after updating `NPM_TOKEN`, rerun the latest failed Release
-workflow. For future changes, Changesets prompts for patch, minor, or major.
-Use patch for a compatible fix, minor for a backward-compatible feature, and
-major for a breaking public API change.
-
-To inspect the package locally before merging:
+## Verify the package
 
 ```sh
 bun run verify
+bun run docs
 npm pack --dry-run
 ```
+
+The `docs` script generates the TypeDoc API reference in `docs/api/`.
+`bun run check` type-checks documentation examples in `docs/snippets/`.
+
+## Changeset release flow
+
+Add a Changeset with each user-facing code change:
+
+```sh
+bun run changeset
+```
+
+Choose patch for a compatible fix, minor for a backward-compatible feature,
+and major for a breaking API change. For import-path migrations, name the old
+and new paths in the Changeset, for example:
+
+```text
+old: @2hasan2/bunker/src/http/router
+new: @2hasan2/bunker/http
+```
+
+Commit the Changeset with the implementation and merge it to `main`. The
+Changesets GitHub Action opens or updates the release PR; merging that PR
+bumps the package version and publishes it to npm. CI pins Bun and runs
+typecheck, tests, build, and the package content check.
+
+For the first npm publish, configure a granular `NPM_TOKEN` GitHub secret
+with package publish access and two-factor bypass enabled. Never commit tokens
+or other credentials.

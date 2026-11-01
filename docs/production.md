@@ -1,80 +1,58 @@
 # Production guide
 
-The central scaling rule is that process-local memory is not shared across
-replicas. Memory adapters are useful for development and tests; use shared
-stores when state must be consistent across processes.
+Bunker does not make process-local state distributed. Treat each server as
+ephemeral and make every cross-instance dependency explicit.
 
-## Identify state before scaling
+## Multi-instance rules
 
-| Concern | Local option | Shared/production approach |
-|---|---|---|
-| Cache | Memory store | Redis cache store |
-| Rate limits | Memory store | Redis rate-limit store |
-| Queue | Memory queue | Redis queue with visibility leases |
-| Locks | None/process-local | Redis TTL lock |
-| Cross-instance events | `Emitter` | Redis pub/sub |
-| Service discovery | Memory registry | Redis service registry |
-| Database | SQLite file | SQLite is local-file storage; use a database architecture suited to shared access before scaling it across hosts |
+- **No in-process coordination:** memory cache, locks, queues, rate-limit
+  counters, and registries are local to one process. Do not rely on them when
+  requests or jobs can move between replicas.
+- **Shared cache:** use Redis-backed cache when instances must observe the
+  same values or invalidations.
+- **Shared locks:** use a Redis lock for scheduler ticks, migrations, or any
+  run-once task. A lock reduces duplicate enqueueing; job handlers still need
+  to be idempotent.
+- **Shared pub/sub:** use Redis pub/sub for notifications across processes.
+  The in-process `Emitter` is for local side effects only.
+- **Run-once schedulers:** all scheduler instances should use the same lock
+  store and task name. Schedulers enqueue jobs; queue workers execute them.
+- **Rolling deployments:** use backward-compatible expand/contract database
+  migrations so adjacent versions can operate during rollout.
 
-Do not use a process-local memory store for rate limits, job coordination, or
-cache invalidation when replicas must agree.
+`memoryDrivers()` warns when `NODE_ENV=production`; that warning does not make
+the memory drivers safe for multi-instance production.
 
-## Redis setup and roles
+## Roles and queues
 
-Inject a Redis client into the toolkit's adapters. The toolkit defines the
-structural `RedisClient` interface but does not choose a Redis library.
-Redis pub/sub requires a publisher and a separate subscriber connection.
-Example setup is in [`example/scaling.ts`](../example/scaling.ts).
+Run web and worker roles from the same application with `ROLE=web`,
+`ROLE=worker`, or `ROLE=all`. Queue delivery is at least once: a worker crash
+or expired visibility lease can cause a job to run again. Make job handlers
+idempotent and propagate `requestId` for logs and outbound calls.
 
-Run the same codebase with:
-
-- `ROLE=web` for HTTP serving
-- `ROLE=worker` for job processing
-- `ROLE=all` for both roles in one process
-
-`RedisQueueStore` claims jobs atomically and uses a visibility lease. Delivery
-is at least once: jobs may run again after a crash or lease expiry, so handlers
-must be idempotent. Include `requestId` when enqueueing to carry request
-correlation into the job context.
-
-Schedulers enqueue jobs; they do not execute job handlers themselves. With a
-shared `RedisLock`, schedulers use lock-guarded ticks so replicas do not enqueue
-the same scheduled task in normal operation. Queue handlers still need
-idempotency.
+See the Redis-backed [scaling example](../example/scaling.ts) and the
+[infrastructure guide](./infra.md) for a complete driver setup.
 
 ## Readiness and graceful shutdown
 
-Wrap the fetch handler with `createShutdown().wrap()`, expose
-`healthRoutes({ isDraining })`, and attach the server. On SIGTERM, readiness
-immediately reports unavailable, new requests are rejected, and in-flight
-requests drain before cleanup.
+Expose `/health` for liveness and `/ready` for dependency checks and drain
+state. On SIGTERM, stop claiming new jobs, reject new requests, drain active
+requests, stop the server, and close database/Redis clients. Register cleanup
+with `createShutdown()` and set the platform termination grace period longer
+than the drain timeout.
 
-Stop workers from claiming new jobs before draining and closing resources.
-Register cleanup functions for the database and Redis connections, then install
-signal handlers. Set the platform termination grace period longer than the
-configured drain timeout.
+## Deploy checklist
 
-## Request safety and observability
-
-- `rateLimit()` requires an explicit identity key. Resolve client IP only at a
-  trusted proxy boundary; do not trust arbitrary forwarded headers.
-- `withIdempotency()` stores completed POST/PUT/PATCH responses in shared cache.
-  Scope keys to a stable authenticated user or tenant, and set a TTL matching
-  the caller retry window.
-- Use Redis pub/sub for events that other instances must receive. `Emitter` is
-  for same-process side effects.
-- `createRequestMetrics()` reports per-instance HTTP metrics. Carry
-  `requestId` into jobs and outbound calls.
-- `withSecurityHeaders()` provides baseline response headers; configure
-  CORS/authentication for your actual deployment separately.
-
-## Migrations and deployment
-
-Run database migrations as a one-off release step before routing traffic to the
-new version, or protect startup migration with a shared distributed lock.
-Prefer backward-compatible expand/contract changes during rolling deploys.
-See the [database guide](./database.md).
-
-For the full composition, including Redis queueing, pub/sub, rate limiting,
-idempotency, and role startup, see [`example/scaling.ts`](../example/scaling.ts)
-and the [detailed production reference](./reference.md#multi-instance-deployments).
+- [ ] Validate all required environment values during startup with
+  `defineEnv()` or `defineConfig()`.
+- [ ] Use shared Redis drivers for state that must coordinate across replicas.
+- [ ] Check that queue handlers are safe to retry and have bounded retry
+  policies.
+- [ ] Ensure only shared-lock schedulers can run recurring tasks.
+- [ ] Apply migrations as a release step or under a shared lock; keep them
+  compatible with the previous and next application versions.
+- [ ] Configure trusted proxy boundaries before using IP-based rate limits.
+- [ ] Verify readiness checks and request draining with the deployment
+  platform's termination window.
+- [ ] Scrape per-instance metrics and include `instanceId`/`requestId` in logs.
+- [ ] Run `bun run verify` and inspect `npm pack --dry-run` before publishing.

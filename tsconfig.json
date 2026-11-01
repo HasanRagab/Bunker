@@ -12,6 +12,17 @@
     "noFallthroughCasesInSwitch": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
+    "paths": {
+      "@2hasan2/bunker": ["./src/index.ts"],
+      "@2hasan2/bunker/core": ["./src/core/index.ts"],
+      "@2hasan2/bunker/http": ["./src/http/index.ts"],
+      "@2hasan2/bunker/auth": ["./src/auth/index.ts"],
+      "@2hasan2/bunker/data": ["./src/data/index.ts"],
+      "@2hasan2/bunker/data/drizzle": ["./src/data/drizzle/index.ts"],
+      "@2hasan2/bunker/infra": ["./src/infra/index.ts"],
+      "@2hasan2/bunker/ops": ["./src/ops/index.ts"],
+      "@2hasan2/bunker/net": ["./src/net/index.ts"]
+    },
     "noEmit": true
   },
   "include": ["src", "example", "test", "scripts", "docs/snippets"]

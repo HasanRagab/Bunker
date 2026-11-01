@@ -1,126 +1,80 @@
 # Getting started
 
-This toolkit is a collection of composable TypeScript modules for Bun. It does
-not require a generated project structure: define ordinary functions and
-schemas, then compose them with a `Router`.
+This walkthrough creates a small, validated API with environment config,
+bearer auth, a typed module, and a request-level test. The complete checked
+example lives in [`snippets/getting-started.ts`](./snippets/getting-started.ts).
 
-## Requirements
-
-- Bun
-- TypeScript
-- Zod
-
-In this repository, dependencies are already declared. Install them and run
-the basic checks with:
+## 1. Create a Bun project
 
 ```sh
-bun install
-bun run check
-bun test
+bun init
+bun add @2hasan2/bunker zod
+bun add -d typescript @types/bun
 ```
 
-The examples import from `../src` because they live in this repository. This
-repository does not currently define a compiled package export; when consuming
-it from another project, configure a workspace or package entry point first.
+## 2. Validate configuration at startup
 
-## Define a route
+Use Zod as the source of truth for configuration types:
 
 ```ts
 import { z } from "zod";
-import { HttpError, Router, serve } from "../src";
+import { defineEnv } from "@2hasan2/bunker/core";
 
-const User = z.object({
-  id: z.string(),
-  name: z.string().min(1),
-});
-
-const api = Router.create().post("/users", {
-  body: z.object({ name: z.string().min(1) }),
-  response: User,
-  handler: ({ body }) => ({
-    id: crypto.randomUUID(),
-    name: body.name,
-  }),
-}).get("/users/:id", {
-  response: User,
-  handler: ({ params }) => {
-    if (params.id === "missing") throw HttpError.notFound("User not found");
-    return { id: params.id, name: "Ada" };
-  },
-});
-
-serve(api.fetch, { port: 3000 });
-```
-
-Schemas have two jobs: they validate incoming requests at runtime and provide
-the handler's TypeScript types. A `response` schema also validates handler
-output. Omit it when the route returns a `Response` directly or does not need
-JSON response validation.
-
-Validate configuration once during startup with `defineEnv()` or
-`defineConfig()`. These boot-time helpers throw an error listing all invalid
-values and how to correct them. Runtime operations use `Result` for expected
-failures; throw `HttpError` only when converting a failure into an HTTP
-response at the route boundary.
-
-Handlers receive `req`, `url`, `requestId`, and `log` in their context, plus
-validated `params`, `query`, and `body`. Throw `HttpError` for expected HTTP
-failures; otherwise thrown errors are handled by the router's error boundary.
-
-## Compose middleware and route modules
-
-Middleware adds typed fields to the handler context. A module can register its
-routes on the router passed to it:
-
-```ts
-import { Router, type BaseCtx } from "../src";
-
-const registerUsers = <C extends BaseCtx>(router: Router<C>) => {
-  router.get("/users", {
-    handler: ({ requestId }) => ({ requestId, items: [] }),
-  });
-};
-
-const api = Router.create();
-registerUsers(api.group("/api"));
-```
-
-Use the value returned from route registration when you need TypeScript to
-preserve the complete route contract for a typed client:
-
-```ts
-const contract = Router.create().get("/users/:id", {
-  response: User,
-  handler: ({ params }) => ({ id: params.id, name: "Ada" }),
+const env = defineEnv({
+  JWT_SECRET: z.string().min(1),
+  PORT: z.coerce.number().int().min(0).max(65535).default(3000),
 });
 ```
 
-The router still registers routes at runtime when mutated without retaining the
-returned value, but a client created from an earlier router variable cannot
-infer routes added later.
+`defineEnv()` and `defineConfig()` are boot-time validation helpers. They throw
+one actionable error listing all invalid values. Expected runtime failures
+should return `Result`; throw `HttpError` only at an HTTP boundary.
 
-## Test without opening a port
+## 3. Define a module with validated routes
+
+Route registration returns a new typed router. Return the chain from the
+module's `routes` function so `createApp` and `createClient` retain its route
+contract:
 
 ```ts
-import { expect } from "bun:test";
-import { createTestApp } from "../src";
+import { z } from "zod";
+import { bearerAuth, defineModule } from "@2hasan2/bunker/http";
+import { verifyJwt } from "@2hasan2/bunker/auth";
 
-const testApp = createTestApp(api);
-const response = await testApp.req.post("/users", { name: "Ada" });
+const userSchema = z.object({ id: z.string(), role: z.enum(["admin", "user"]) });
+const authenticate = bearerAuth(async (token) => {
+  const result = await verifyJwt(token, env.JWT_SECRET, userSchema);
+  return result.ok ? result.value : null;
+});
 
-expect(response.status).toBe(200);
-expect(await response.json()).toMatchObject({ name: "Ada" });
+const users = defineModule({
+  name: "users",
+  prefix: "/api",
+  routes: (router) => router
+    .use(authenticate)
+    .get("/me", {
+      response: userSchema,
+      handler: ({ user }) => user,
+    }),
+});
 ```
 
-`createTestApp()` calls the router directly with synthetic `Request` objects.
-Use Bun's `bun:test` for assertions and tests.
+## 4. Start and test without a listener
 
-## Next steps
+`createTestApp()` uses memory drivers and calls the routes directly; it does
+not bind a port:
 
-- Add a typed persistent data layer with the [database guide](./database.md).
-- See [service communication](./services.md) before splitting an app into
-  multiple backends.
-- Use the [production guide](./production.md) when adding shared state,
-  background workers, or graceful shutdown.
-- See the full route/client/OpenAPI examples in the
-  [detailed reference](./reference.md).
+```ts
+import { createTestApp } from "@2hasan2/bunker";
+
+const testApp = await createTestApp({ modules: [users], env });
+const response = await testApp.req.get("/api/me");
+// Missing credentials correctly produce 401.
+console.log(response.status);
+await testApp.stop();
+```
+
+For production, compose the same module with `createApp({ env, drivers,
+modules })`, then call `start()` and `stop()` from your process entry point.
+See the [HTTP guide](./http.md), [Auth guide](./auth.md), and
+[production guide](./production.md).

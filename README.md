@@ -1,35 +1,21 @@
-# kit — typed Bun backend toolkit
+# @2hasan2/bunker
 
-A collection of composable TypeScript modules for Bun, built around Zod,
-fetch-compatible HTTP handlers, and typed data access. This project is a
-toolkit—not a project generator. Start with only the modules your application
-needs.
+Bunker is a small, composable toolkit for building type-safe Bun backends with
+TypeScript and Zod. Use only the pieces you need: typed routes, repositories,
+auth, infrastructure drivers, and operational helpers, without adopting a
+framework-wide runtime.
 
-## Documentation
-
-| If you want to… | Read |
-|---|---|
-| Build and test a typed API | [Getting started](./docs/getting-started.md) |
-| Add SQLite, Drizzle, and migrations | [Database guide](./docs/database.md) |
-| Organize modules or separate services | [Service communication](./docs/services.md) |
-| Prepare Redis-backed multi-instance deployment | [Production guide](./docs/production.md) |
-| Find the right module | [Module map](./docs/module-map.md) |
-| Build and publish to npm | [Publishing guide](./docs/publishing.md) |
-| Browse all features and expanded examples | [Detailed reference](./docs/reference.md) |
-
-The [documentation home](./docs/README.md) lists guides and runnable examples.
-
-## Quick look
-
-After the initial npm release, install the package in a Bun application:
+## Install
 
 ```sh
-bun add @2hasan2/bunker
+bun add @2hasan2/bunker zod
 ```
+
+## A typed API in a few lines
 
 ```ts
 import { z } from "zod";
-import { Router, serve } from "@2hasan2/bunker";
+import { Router, serve } from "@2hasan2/bunker/http";
 
 const api = Router.create().get("/hello/:name", {
   response: z.object({ message: z.string() }),
@@ -39,35 +25,36 @@ const api = Router.create().get("/hello/:name", {
 serve(api.fetch, { port: 3000 });
 ```
 
-Routes can validate query strings and request bodies with Zod, infer handler
-types, validate response values, and expose contracts to a typed client. Use
-`createTestApp(api)` to test handlers without opening a network listener.
+This example is type-checked in [`docs/snippets/readme.ts`](./docs/snippets/readme.ts).
 
-## Development
+## Modules
 
-The package is built from `src/` into `dist/`; repository examples import from
-source to exercise the working tree directly.
+| Module | Import path | Use when |
+|---|---|---|
+| Core | `@2hasan2/bunker/core` | Validating config, handling results, logging, and defining services |
+| HTTP | `@2hasan2/bunker/http` | Building routes, middleware, typed clients, and HTTP tests |
+| Auth | `@2hasan2/bunker/auth` | Signing tokens, hashing passwords, and enforcing roles |
+| Data | `@2hasan2/bunker/data` | Using SQLite repositories; install optional Drizzle peers for `/data/drizzle` |
+| Infra | `@2hasan2/bunker/infra` | Adding cache, locks, jobs, scheduling, rate limits, and pub/sub |
+| Ops | `@2hasan2/bunker/ops` | Adding health checks, metrics, and graceful shutdown |
+| Net | `@2hasan2/bunker/net` | Calling other services or discovering service instances |
+| App | `@2hasan2/bunker` | Composing modules with `createApp` and `createTestApp` |
+
+## Guides
+
+- [Getting started](./docs/getting-started.md)
+- [HTTP](./docs/http.md) · [Auth](./docs/auth.md) · [Data](./docs/data.md)
+- [Infrastructure](./docs/infra.md) · [Operations](./docs/ops.md) · [Networking](./docs/net.md)
+- [Recipes](./docs/recipes.md) · [Production](./docs/production.md)
+- [Publishing](./docs/publishing.md) · [Generated API reference](./docs/api/index.html)
+
+## Scaffold a project
 
 ```sh
+bunx create-bunker my-api
+cd my-api
 bun install
-bun run check
-bun test
+bun run dev
 ```
 
-Database scripts: `bun run db:generate` creates a migration from the configured
-Drizzle schema; `bun run db:migrate` applies committed migrations.
-
-The npm package build is `bun run build`. For the Changesets GitHub release
-flow and npm token setup, see the
-[publishing guide](./docs/publishing.md).
-
-## Guiding conventions
-
-- Define runtime validation with Zod and infer types from those schemas.
-- Inject shared resources through middleware or factory arguments, not mutable
-  application globals.
-- Keep domain/data failures explicit with `Result`; translate expected HTTP
-  failures to `HttpError` at the route boundary.
-- Use memory adapters for local development/tests only when process-local state
-  is acceptable. Inject shared adapters when replicas must coordinate.
-- Add features incrementally; not every app needs jobs, Redis, or microservices.
+Inside a project, create a starter module with `bunker generate module users`.
