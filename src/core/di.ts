@@ -1,3 +1,12 @@
+/**
+ * Create a string-keyed service container.
+ * @deprecated Use {@link defineService} and {@link createServiceRegistry} instead.
+ * @example
+ * ```ts
+ * const services = createContainer({ logger: createLogger() });
+ * const logger = services.get("logger");
+ * ```
+ */
 export function createContainer<Services extends Record<string, unknown>>(services: Services) {
   const values = new Map<string, unknown>(Object.entries(services));
   return {

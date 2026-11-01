@@ -6,3 +6,4 @@ export * from "./config";
 export * from "./env";
 export * from "./di";
 export * from "./events";
+export * from "./services";

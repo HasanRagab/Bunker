@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, expectTypeOf, it } from "bun:test";
 import { Database } from "bun:sqlite";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
@@ -12,6 +12,8 @@ import {
   createScheduler,
   createShutdown,
   createLogger,
+  createServiceRegistry,
+  defineService,
   defineJob,
   healthRoutes,
   MemoryCacheStore,
@@ -246,6 +248,22 @@ describe("router integrations", () => {
 });
 
 describe("shared utilities", () => {
+  it("resolves typed services and clears registrations", () => {
+    interface UserRepository {
+      find(id: string): Promise<{ id: string } | null>;
+    }
+    const userRepository = defineService<UserRepository>("userRepository");
+    const services = createServiceRegistry();
+    const repository: UserRepository = { find: async (id) => ({ id }) };
+    services.provide(userRepository, repository);
+    const resolved = services.resolve(userRepository);
+    expectTypeOf(resolved).toEqualTypeOf<UserRepository>();
+    expect(resolved).toBe(repository);
+    expect(() => services.provide(userRepository, repository)).toThrow(/already provided/);
+    services.clear();
+    expect(() => services.resolve(userRepository)).toThrow(/provide it with registry\.provide/);
+  });
+
   it("caches values and returns a Result", async () => {
     const cache = createCache(new MemoryCacheStore());
     const result = await cache.wrap("key", 1000, () => ({ value: 1 }));
