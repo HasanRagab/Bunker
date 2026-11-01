@@ -1,6 +1,6 @@
 {
   "name": "@2hasan2/bunker",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "description": "Typed, composable backend toolkit for Bun, TypeScript, and Zod.",
   "license": "MIT",
