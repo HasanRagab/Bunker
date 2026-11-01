@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { createLogger, type Logger } from "../core/logger";
 import { err, ok, type Result } from "../core/result";
 
 export interface QueuedJob {
@@ -8,6 +9,7 @@ export interface QueuedJob {
   readonly attempts: number;
   readonly maxAttempts: number;
   readonly retryDelayMs: number;
+  readonly backoff?: { readonly factor: number; readonly maxDelayMs: number };
   readonly runAt: number;
   readonly requestId?: string;
 }
@@ -67,6 +69,11 @@ export class MemoryQueueStore implements QueueStore {
   }
 }
 
+/** Create a process-local job queue store. */
+export function memoryQueue(): MemoryQueueStore {
+  return new MemoryQueueStore();
+}
+
 export interface JobDefinition<Payload> {
   readonly name: string;
   readonly schema: z.ZodType<Payload>;
@@ -74,19 +81,32 @@ export interface JobDefinition<Payload> {
   readonly run: (payload: unknown, context: JobContext) => Promise<void>;
   readonly maxAttempts: number;
   readonly retryDelayMs: number;
+  readonly backoff?: { readonly factor: number; readonly maxDelayMs: number };
 }
 
 export function defineJob<Payload>(
   name: string,
   schema: z.ZodType<Payload>,
   handler: (payload: Payload, context: JobContext) => void | Promise<void>,
-  options: { maxAttempts?: number; retryDelayMs?: number } = {},
+  options: {
+    maxAttempts?: number;
+    retryDelayMs?: number;
+    backoff?: boolean | { factor?: number; maxDelayMs?: number };
+  } = {},
 ): JobDefinition<Payload> {
   if (!name.trim()) throw new TypeError("Job name must not be empty");
   const maxAttempts = options.maxAttempts ?? 3;
   const retryDelayMs = options.retryDelayMs ?? 1_000;
+  const backoff = options.backoff === true ? {} : options.backoff || undefined;
+  const retryBackoff = backoff
+    ? { factor: backoff.factor ?? 2, maxDelayMs: backoff.maxDelayMs ?? 60_000 }
+    : undefined;
   if (!Number.isInteger(maxAttempts) || maxAttempts < 1) throw new RangeError("maxAttempts must be a positive integer");
   if (!Number.isFinite(retryDelayMs) || retryDelayMs < 0) throw new RangeError("retryDelayMs must be non-negative");
+  if (retryBackoff && (!Number.isFinite(retryBackoff.factor) || retryBackoff.factor < 1 ||
+    !Number.isFinite(retryBackoff.maxDelayMs) || retryBackoff.maxDelayMs < 0)) {
+    throw new RangeError("Exponential backoff factor must be at least one and maxDelayMs must be non-negative");
+  }
   return {
     name,
     schema,
@@ -98,14 +118,22 @@ export function defineJob<Payload>(
     },
     maxAttempts,
     retryDelayMs,
+    ...(retryBackoff ? { backoff: retryBackoff } : {}),
   };
 }
 
 export function createQueue(
   store: QueueStore,
-  options: { pollMs?: number; visibilityTimeoutMs?: number; onError?: (error: Error, job: QueuedJob) => void } = {},
+  options: {
+    pollMs?: number;
+    visibilityTimeoutMs?: number;
+    onError?: (error: Error, job: QueuedJob) => void;
+    onDeadLetter?: (error: Error, job: QueuedJob) => void | Promise<void>;
+    logger?: Logger;
+  } = {},
 ) {
-  const { pollMs = 250, visibilityTimeoutMs = 30_000, onError = (error) => console.error(error) } = options;
+  const { pollMs = 250, visibilityTimeoutMs = 30_000, onDeadLetter, logger = createLogger() } = options;
+  const onError = options.onError ?? ((error: Error, job: QueuedJob) => logger.error("Background job failed", { error, jobId: job.id, jobName: job.name }));
   if (!Number.isFinite(pollMs) || pollMs < 1) throw new RangeError("Queue poll interval must be positive");
   if (!Number.isFinite(visibilityTimeoutMs) || visibilityTimeoutMs < 1) throw new RangeError("Queue visibility timeout must be positive");
   let running = false;
@@ -130,6 +158,7 @@ export function createQueue(
           attempts: 0,
           maxAttempts: definition.maxAttempts,
           retryDelayMs: definition.retryDelayMs,
+          ...(definition.backoff ? { backoff: definition.backoff } : {}),
           runAt: Date.now() + delayMs,
           ...(options.requestId ? { requestId: options.requestId } : {}),
         });
@@ -158,6 +187,7 @@ export function createQueue(
           }
           const definition = handlers.get(job.name);
           if (!definition) {
+            logger.error("Removing job with no registered handler", { jobId: job.id, jobName: job.name });
             onError(new Error(`No worker registered for job: ${job.name}`), job);
             await store.remove(job.id);
             continue;
@@ -180,8 +210,18 @@ export function createQueue(
             const error = asError(cause);
             onError(error, job);
             if (job.attempts + 1 < job.maxAttempts) {
-              await store.retry(job, Date.now() + job.retryDelayMs);
+              const delayMs = job.backoff
+                ? Math.min(job.backoff.maxDelayMs, job.retryDelayMs * job.backoff.factor ** job.attempts)
+                : job.retryDelayMs;
+              await store.retry(job, Date.now() + delayMs);
             } else {
+              if (onDeadLetter) {
+                try {
+                  await onDeadLetter(error, job);
+                } catch (cause) {
+                  logger.error("Dead-letter handler failed", { error: asError(cause), jobId: job.id, jobName: job.name });
+                }
+              }
               await store.remove(job.id);
             }
           } finally {

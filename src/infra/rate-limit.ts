@@ -23,3 +23,8 @@ export class MemoryRateLimitStore implements RateLimitStore {
     return { ...window };
   }
 }
+
+/** Create a process-local rate-limit store. */
+export function memoryRateLimit(): MemoryRateLimitStore {
+  return new MemoryRateLimitStore();
+}

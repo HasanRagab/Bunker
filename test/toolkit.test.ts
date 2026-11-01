@@ -11,9 +11,12 @@ import {
   createTestApp,
   createScheduler,
   createShutdown,
+  createLogger,
   defineJob,
   healthRoutes,
   MemoryCacheStore,
+  memoryLock,
+  memoryPubSub,
   MemoryQueueStore,
   MemoryRateLimitStore,
   createRequestMetrics,
@@ -44,6 +47,7 @@ import {
   verifyJwt,
   serveTcpService,
   type RedisClient,
+  type QueuedJob,
 } from "../src";
 import { users as drizzleUsers, schema as drizzleSchema } from "../example/db/schema";
 
@@ -251,6 +255,23 @@ describe("shared utilities", () => {
     expect(cached).toEqual({ ok: true, value: { value: 1 } });
   });
 
+  it("provides local lock and validated pub/sub drivers", async () => {
+    const lock = memoryLock();
+    const lease = await lock.acquire("resource", 1_000);
+    expect(lease).not.toBeNull();
+    expect(await lock.acquire("resource", 1_000)).toBeNull();
+    await lease?.release();
+    expect(await lock.acquire("resource", 1_000)).not.toBeNull();
+
+    const pubsub = memoryPubSub({ changed: z.object({ id: z.string() }) });
+    const events: string[] = [];
+    const unsubscribe = await pubsub.subscribe("changed", ({ id }) => { events.push(id); });
+    await pubsub.publish("changed", { id: "first" });
+    await unsubscribe();
+    await pubsub.publish("changed", { id: "ignored" });
+    expect(events).toEqual(["first"]);
+  });
+
   it("validates cache values and coalesces concurrent cache misses", async () => {
     const store = new MemoryCacheStore();
     const cache = createCache(store);
@@ -389,6 +410,52 @@ describe("shared utilities", () => {
     await Bun.sleep(20);
     await worker.stop();
     expect(handled).toBe(true);
+  });
+
+  it("logs unknown jobs and dead-letters exhausted jobs after exponential retries", async () => {
+    const logs: string[] = [];
+    const logger = createLogger({ sink: (line) => logs.push(line) });
+    const unknownStore = new MemoryQueueStore();
+    await unknownStore.enqueue({
+      id: "unknown-id",
+      name: "missing",
+      payload: {},
+      attempts: 0,
+      maxAttempts: 1,
+      retryDelayMs: 1,
+      runAt: Date.now(),
+    });
+    const unknownWorker = createQueue(unknownStore, { pollMs: 1, logger }).start([]);
+    await Bun.sleep(5);
+    await unknownWorker.stop();
+    expect(logs.some((line) => line.includes("Removing job with no registered handler"))).toBe(true);
+
+    class TrackingQueueStore extends MemoryQueueStore {
+      readonly delays: number[] = [];
+      override async retry(job: QueuedJob, runAt: number): Promise<void> {
+        this.delays.push(runAt - Date.now());
+        await super.retry(job, runAt);
+      }
+    }
+    const store = new TrackingQueueStore();
+    const deadLetters: string[] = [];
+    const definition = defineJob("always-fails", z.object({}), () => {
+      throw new Error("job failed");
+    }, { maxAttempts: 3, retryDelayMs: 50, backoff: { factor: 3, maxDelayMs: 200 } });
+    const queue = createQueue(store, {
+      pollMs: 1,
+      logger,
+      onDeadLetter: (_error, job) => { deadLetters.push(job.id); },
+    });
+    await queue.enqueue(definition, {});
+    const worker = queue.start([definition]);
+    await Bun.sleep(300);
+    await worker.stop();
+    expect(store.delays[0]).toBeGreaterThanOrEqual(40);
+    expect(store.delays[0]).toBeLessThanOrEqual(50);
+    expect(store.delays[1]).toBeGreaterThanOrEqual(140);
+    expect(store.delays[1]).toBeLessThanOrEqual(150);
+    expect(deadLetters).toHaveLength(1);
   });
 
   it("retries safe HTTP requests and enforces multipart limits", async () => {

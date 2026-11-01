@@ -65,6 +65,11 @@ export class MemoryCacheStore implements CacheStore {
   }
 }
 
+/** Create a process-local cache store. */
+export function memoryCache(): MemoryCacheStore {
+  return new MemoryCacheStore();
+}
+
 export function createCache(store: CacheStore) {
   return {
     async get<T>(key: string, schema: { parse(value: unknown): T }): Promise<Result<T | null, Error>> {

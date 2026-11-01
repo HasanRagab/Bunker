@@ -1,4 +1,5 @@
 import { createConnection, createServer, type Socket, type Server } from "node:net";
+import { createLogger, type Logger } from "../core/logger";
 import type { BaseCtx, RouteMap, Router } from "../http/router";
 import { createClient } from "../http/client";
 import type { RedisClient } from "../infra/redis-client";
@@ -65,6 +66,8 @@ export function createDiscoveredClient<C extends BaseCtx, Routes extends RouteMa
 export class MemoryServiceRegistry implements ServiceRegistry {
   #instances = new Map<string, Map<string, { instance: ServiceInstance; expiresAt: number }>>();
 
+  constructor(private readonly logger: Logger = createLogger()) {}
+
   async register(instance: ServiceInstance, options: { ttlMs?: number; heartbeatMs?: number } = {}): Promise<ServiceRegistration> {
     const ttlMs = options.ttlMs ?? 30_000;
     const heartbeatMs = options.heartbeatMs ?? Math.floor(ttlMs / 3);
@@ -78,7 +81,7 @@ export class MemoryServiceRegistry implements ServiceRegistry {
     };
     await save();
     const timer = setInterval(() => {
-      void save().catch((cause) => console.error("Service registry heartbeat failed", cause));
+      void save().catch((cause) => this.logger.error("Service registry heartbeat failed", { error: asError(cause), service: instance.name, instanceId: instance.instanceId }));
     }, heartbeatMs);
     timer.unref();
     return {
@@ -110,7 +113,11 @@ export class MemoryServiceRegistry implements ServiceRegistry {
 }
 
 export class RedisServiceRegistry implements ServiceRegistry {
-  constructor(private readonly redis: RedisClient, private readonly prefix = "kit:services:") {}
+  constructor(
+    private readonly redis: RedisClient,
+    private readonly prefix = "bunker:services:",
+    private readonly logger: Logger = createLogger(),
+  ) {}
 
   async register(instance: ServiceInstance, options: { ttlMs?: number; heartbeatMs?: number } = {}): Promise<ServiceRegistration> {
     const ttlMs = options.ttlMs ?? 30_000;
@@ -130,7 +137,7 @@ export class RedisServiceRegistry implements ServiceRegistry {
     };
     await refresh();
     const timer = setInterval(() => {
-      void refresh().catch((cause) => console.error("Redis service registry heartbeat failed", cause));
+      void refresh().catch((cause) => this.logger.error("Redis service registry heartbeat failed", { error: asError(cause), service: instance.name, instanceId: instance.instanceId }));
     }, heartbeatMs);
     timer.unref();
     return {
@@ -239,18 +246,19 @@ const DEFAULT_MAX_FRAME_BYTES = 8 * 1024 * 1024;
 
 export async function serveTcpService(
   handler: (request: Request) => Promise<Response>,
-  options: { host?: string; port: number; timeoutMs?: number; maxFrameBytes?: number },
+  options: { host?: string; port: number; timeoutMs?: number; maxFrameBytes?: number; logger?: Logger },
 ): Promise<TcpServiceServer> {
   const host = options.host ?? "127.0.0.1";
   const timeoutMs = options.timeoutMs ?? 10_000;
   const maxFrameBytes = options.maxFrameBytes ?? DEFAULT_MAX_FRAME_BYTES;
+  const logger = options.logger ?? createLogger();
   if (!Number.isFinite(timeoutMs) || timeoutMs < 1) throw new RangeError("TCP timeout must be positive");
   validateFrameLimit(maxFrameBytes);
   const server = createServer((socket) => {
     socket.setTimeout(timeoutMs, () => socket.destroy());
     void handleTcpSocket(socket, handler, maxFrameBytes);
   });
-  server.on("error", (error) => console.error("TCP service server error", error));
+  server.on("error", (error) => logger.error("TCP service server error", { error }));
   await new Promise<void>((resolve, reject) => {
     const onError = (error: Error) => {
       server.off("listening", onListening);

@@ -20,7 +20,7 @@ export function withIdempotency(
     scope?: (request: Request) => string | Promise<string>;
   } = {},
 ): (request: Request) => Promise<Response> {
-  const { ttlMs = 86_400_000, headerName = "idempotency-key", keyPrefix = "kit:idempotency:", scope } = options;
+  const { ttlMs = 86_400_000, headerName = "idempotency-key", keyPrefix = "bunker:idempotency:", scope } = options;
   if (!Number.isFinite(ttlMs) || ttlMs <= 0) throw new RangeError("Idempotency TTL must be positive");
 
   return async (request) => {

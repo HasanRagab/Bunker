@@ -4,11 +4,13 @@ import type { Lock } from "./lock";
 import type { QueueStore, QueuedJob } from "./jobs";
 import type { PubSub, EventSchemas } from "./pubsub";
 import type { RedisClient } from "./redis-client";
+import { createLogger, type Logger } from "../core/logger";
 
 export type { RedisClient } from "./redis-client";
 
+/** @deprecated Use {@link redisCache}. */
 export class RedisCacheStore implements CacheStore {
-  constructor(private readonly redis: RedisClient, private readonly prefix = "kit:cache:") {}
+  constructor(private readonly redis: RedisClient, private readonly prefix = "bunker:cache:") {}
 
   get(key: string): Promise<string | null> {
     return this.redis.get(this.key(key));
@@ -21,10 +23,6 @@ export class RedisCacheStore implements CacheStore {
 
   async delete(key: string): Promise<void> {
     await this.redis.del(this.key(key));
-  }
-
-  async del(key: string): Promise<void> {
-    await this.delete(key);
   }
 
   async setIfAbsent(key: string, value: string, ttlMs: number): Promise<boolean> {
@@ -61,8 +59,14 @@ export class RedisCacheStore implements CacheStore {
   }
 }
 
+/** Create a Redis-backed cache store. */
+export function redisCache(redis: RedisClient, prefix = "bunker:cache:"): RedisCacheStore {
+  return new RedisCacheStore(redis, prefix);
+}
+
+/** @deprecated Use {@link redisRateLimit}. */
 export class RedisRateLimitStore implements RateLimitStore {
-  constructor(private readonly redis: RedisClient, private readonly prefix = "kit:rate:") {}
+  constructor(private readonly redis: RedisClient, private readonly prefix = "bunker:rate:") {}
 
   async increment(key: string, windowMs: number, now: number): Promise<{ count: number; resetAt: number }> {
     validateTtl(windowMs);
@@ -77,8 +81,14 @@ export class RedisRateLimitStore implements RateLimitStore {
   }
 }
 
+/** Create a Redis-backed rate-limit store. */
+export function redisRateLimit(redis: RedisClient, prefix = "bunker:rate:"): RedisRateLimitStore {
+  return new RedisRateLimitStore(redis, prefix);
+}
+
+/** @deprecated Use {@link redisQueue}. */
 export class RedisQueueStore implements QueueStore {
-  constructor(private readonly redis: RedisClient, private readonly prefix = "kit:jobs:") {}
+  constructor(private readonly redis: RedisClient, private readonly prefix = "bunker:jobs:") {}
 
   async enqueue(job: QueuedJob): Promise<void> {
     await this.redis.eval(QUEUE_ENQUEUE, {
@@ -136,13 +146,20 @@ export class RedisQueueStore implements QueueStore {
   }
 }
 
-export function createRedisPubSub<Events extends EventSchemas>(
+/** Create a Redis-backed job queue store. */
+export function redisQueue(redis: RedisClient, prefix = "bunker:jobs:"): RedisQueueStore {
+  return new RedisQueueStore(redis, prefix);
+}
+
+/** Create a Redis-backed typed pub/sub driver. */
+export function redisPubSub<Events extends EventSchemas>(
   publisher: RedisClient,
   subscriber: RedisClient,
   schemas: Events,
-  options: { prefix?: string } = {},
+  options: { prefix?: string; logger?: Logger } = {},
 ): PubSub<{ [K in keyof Events]: import("zod").output<Events[K]> }> {
-  const prefix = options.prefix ?? "kit:events:";
+  const prefix = options.prefix ?? "bunker:events:";
+  const logger = options.logger ?? createLogger();
   const listeners = new Map<string, Set<(payload: unknown) => void | Promise<void>>>();
   const subscribed = new Set<string>();
 
@@ -166,21 +183,21 @@ export function createRedisPubSub<Events extends EventSchemas>(
           try {
             payload = JSON.parse(message);
           } catch (cause) {
-            console.error("Invalid JSON received from Redis pub/sub", cause);
+            logger.error("Invalid JSON received from Redis pub/sub", { error: asError(cause) });
             return;
           }
           const schema = schemas[event];
           if (!schema) {
-            console.error(`No schema registered for event: ${String(event)}`);
+            logger.error("No schema registered for Redis pub/sub event", { event: String(event) });
             return;
           }
           const parsed = schema.safeParse(payload);
           if (!parsed.success) {
-            console.error("Invalid event received from Redis pub/sub", parsed.error);
+            logger.error("Invalid event received from Redis pub/sub", { event: String(event), error: parsed.error });
             return;
           }
           for (const handler of listeners.get(channel) ?? []) {
-            void Promise.resolve(handler(parsed.data)).catch((cause) => console.error("Redis pub/sub handler failed", cause));
+            void Promise.resolve(handler(parsed.data)).catch((cause) => logger.error("Redis pub/sub handler failed", { event: String(event), error: asError(cause) }));
           }
         });
         subscribed.add(channel);
@@ -195,6 +212,9 @@ export function createRedisPubSub<Events extends EventSchemas>(
     },
   };
 }
+
+/** @deprecated Use {@link redisPubSub}. */
+export const createRedisPubSub = redisPubSub;
 
 function parseJob(value: unknown): QueuedJob {
   if (typeof value !== "object" || value === null) throw new Error("Invalid Redis queue job");
@@ -219,6 +239,10 @@ function integerResult(value: unknown, label: string): number {
 
 function validateTtl(ttlMs: number): void {
   if (!Number.isFinite(ttlMs) || ttlMs <= 0) throw new RangeError("TTL must be a positive finite number");
+}
+
+function asError(cause: unknown): Error {
+  return cause instanceof Error ? cause : new Error(String(cause));
 }
 
 const INCREMENT_WITH_TTL = `
