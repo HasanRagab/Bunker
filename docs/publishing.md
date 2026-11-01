@@ -39,14 +39,18 @@ The release workflow uses an npm granular access token, like the
    `@2hasan2/bunker` (or the `@2hasan2` scope), and set an appropriate
    expiration.
 4. Copy the token and save it as the GitHub Actions repository secret
-   `NPM_TOKEN` under **Settings → Secrets and variables → Actions**.
+   `NPM_TOKEN` under **Settings → Secrets and variables → Actions**. The
+   release workflow configures npm's registry authentication and passes this
+   secret as `NODE_AUTH_TOKEN` when Changesets publishes.
 5. Ensure GitHub Actions is allowed to create pull requests in the repository
    settings.
 
 The bypass-2FA option is required for a CI token; otherwise npm returns
-`EOTP`. Never put the token in source control or workflow YAML. If a failed
-workflow reports `ENEEDAUTH`, verify that the secret was replaced with the
-new granular token and that it has publish access to this package.
+`EOTP`. Never put the token in source control or workflow YAML. If publishing
+still returns `EOTP`, replace the secret with a newly generated granular token
+that explicitly has **Bypass two-factor authentication** enabled and publish
+access to this package. If a workflow reports `ENEEDAUTH`, verify the secret
+exists and has publish access.
 
 ## Release flow
 
