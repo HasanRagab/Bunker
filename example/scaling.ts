@@ -84,7 +84,7 @@ export async function startScalingExample(
   healthRoutes(api, {
     checks: {
       redis: async () => {
-        await redis.get("kit:health");
+        await redis.get("bunker:health");
         return true;
       },
     },

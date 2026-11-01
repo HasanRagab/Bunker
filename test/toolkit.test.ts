@@ -35,8 +35,6 @@ import {
   withIdempotency,
   openAPIDocs,
   openDatabase,
-  createDrizzleDatabase,
-  migrateDatabase,
   paginateArray,
   parseUploads,
   rateLimit,
@@ -49,6 +47,7 @@ import {
   type RedisClient,
   type QueuedJob,
 } from "../src";
+import { createDrizzleDatabase, migrateDatabase } from "../src/data/drizzle";
 import { users as drizzleUsers, schema as drizzleSchema } from "../example/db/schema";
 
 class SharedFakeRedis implements RedisClient {

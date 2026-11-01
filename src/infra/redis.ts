@@ -87,6 +87,7 @@ export function redisRateLimit(redis: RedisClient, prefix = "bunker:rate:"): Red
 }
 
 /** @deprecated Use {@link redisQueue}. */
+/** @deprecated Use {@link redisQueue}. */
 export class RedisQueueStore implements QueueStore {
   constructor(private readonly redis: RedisClient, private readonly prefix = "bunker:jobs:") {}
 

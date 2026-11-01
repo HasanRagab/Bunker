@@ -130,17 +130,18 @@ const router = Router.create().use(withDatabase(db));
 Repository table and column identifiers are validated; values are bound
 parameters.
 
-For schema-first ORM usage, define tables once in
-[`src/db/schema.ts`](../src/db/schema.ts). Drizzle infers select/insert types,
-and `drizzle-zod` derives runtime insert/update/select schemas from those same
-table definitions. Use its normal typed query API:
+For schema-first ORM usage, define tables in your application schema module.
+Drizzle infers select/insert types, and `drizzle-zod` derives runtime
+insert/update/select schemas from those same table definitions. Install the
+optional ORM packages, then use the dedicated data subpath:
 
 ```ts
 import { Database } from "bun:sqlite";
-import { createDrizzleDatabase, insertUserSchema, users } from "../src";
+import { createDrizzleDatabase } from "@2hasan2/bunker/data/drizzle";
+import { insertUserSchema, users } from "./db/schema";
 
 const client = new Database("./data/app.sqlite", { create: true, strict: true });
-const db = createDrizzleDatabase(client);
+const db = createDrizzleDatabase(client, { schema: { users } });
 
 const input = insertUserSchema.parse({ name: "Ada", email: "ada@example.com" });
 const user = db.insert(users).values(input).returning().get();
@@ -148,10 +149,10 @@ const found = db.query.users.findFirst({ where: (table, { eq }) => eq(table.id, 
 client.close();
 ```
 
-`createDrizzleDatabase()` defaults to the exported example schema; pass a
-different schema with `{ schema }` for an application-specific database.
-`withDrizzleDatabase(db)` injects that typed Drizzle instance into route
-middleware. See [`example/drizzle-db.ts`](../example/drizzle-db.ts).
+Pass your application schema with `{ schema }`; Bunker does not bundle an
+application-specific schema. `withDrizzleDatabase(db)` injects that typed
+Drizzle instance into route middleware. See
+[`example/drizzle-db.ts`](../example/drizzle-db.ts).
 
 Generate and commit SQL migrations from the schema, then apply them either in a
 deployment step or at application startup:
@@ -161,10 +162,12 @@ bun run db:generate
 bun run db:migrate
 ```
 
-`drizzle.config.ts` configures Drizzle Kit. `db:migrate` uses
+`example/drizzle.config.ts` configures Drizzle Kit for the demo application.
+Copy and adapt it for your app. `db:migrate` uses
 `migrateDatabase(db, migrationsFolder)`, which runs Drizzle's migration runner
-and returns `Result<void, Error>`. The checked-in `drizzle/` directory contains
-the initial generated migration. Set `DATABASE_URL` to select the SQLite file;
+and returns `Result<void, Error>`. The checked-in
+[`example/drizzle/`](../example/drizzle/) directory contains the demo's initial
+generated migration. Set `DATABASE_URL` to select the SQLite file;
 `DRIZZLE_MIGRATIONS_FOLDER` can override the default migration directory.
 Always close the underlying `bun:sqlite` client during shutdown.
 

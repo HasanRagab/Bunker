@@ -1,14 +1,13 @@
 # Database guide
 
-The toolkit currently supports SQLite through Bun and Drizzle ORM. It also
+The toolkit supports SQLite through Bun and optional Drizzle ORM integration. It also
 retains a small raw-SQL repository API for applications that prefer explicit
 queries. Choose one API per feature rather than mixing both styles in the same
 repository without a reason.
 
 ## Define tables once
 
-Edit [`src/db/schema.ts`](../src/db/schema.ts) or define your application's
-schema in its own module. Drizzle table definitions provide query types;
+Define your application's schema in its own module. Drizzle table definitions provide query types;
 `drizzle-zod` derives runtime validation schemas from those same definitions.
 
 ```ts
@@ -35,7 +34,8 @@ object passed to Drizzle. This enables typed relational queries.
 import { Database } from "bun:sqlite";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
-import { createDrizzleDatabase, Router, withDrizzleDatabase } from "../src";
+import { createDrizzleDatabase, withDrizzleDatabase } from "@2hasan2/bunker/data/drizzle";
+import { Router } from "@2hasan2/bunker/http";
 
 const notes = sqliteTable("notes", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -59,11 +59,10 @@ unnecessary `await` calls to local query methods.
 
 ## Generate and apply migrations
 
-The repository's Drizzle Kit configuration reads `src/db/schema.ts` and writes
-migrations to `drizzle/`. For an application-specific schema, update
-`drizzle.config.ts` to point at that schema module before generating migrations;
-apply the generated directory through the matching `migrationsFolder` argument
-to `migrateDatabase()`.
+The example Drizzle Kit configuration reads `example/db/schema.ts` and writes
+migrations to `example/drizzle/`. Copy the configuration into your application
+and point it at your schema. Apply the generated directory through the matching
+`migrationsFolder` argument to `migrateDatabase()`.
 
 ```sh
 # After changing a table definition:
@@ -88,7 +87,7 @@ Environment variables:
 | Variable | Default | Purpose |
 |---|---|---|
 | `DATABASE_URL` | `./data/app.sqlite` | SQLite database file path |
-| `DRIZZLE_MIGRATIONS_FOLDER` | `./drizzle` | Runtime migration directory |
+| `DRIZZLE_MIGRATIONS_FOLDER` | `./example/drizzle` | Runtime migration directory |
 
 Example:
 
@@ -107,4 +106,4 @@ schema for every application.
 Zod-backed CRUD. Use them when you want a small validated repository and are
 comfortable managing the table DDL yourself. This API does not generate or run
 Drizzle migrations. See the [reference repository example](./reference.md#sqlite-repositories-and-typed-orm)
-and [`src/db/index.ts`](../src/db/index.ts).
+and [`src/data/db/index.ts`](../src/data/db/index.ts).

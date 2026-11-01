@@ -4,6 +4,7 @@ export interface RateLimitStoreLike {
 
 export type RateLimitStore = RateLimitStoreLike;
 
+/** @deprecated Use {@link memoryRateLimit}. */
 export class MemoryRateLimitStore implements RateLimitStore {
   #windows = new Map<string, { count: number; resetAt: number }>();
   #operations = 0;

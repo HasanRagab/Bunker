@@ -11,6 +11,7 @@ export interface CacheStore {
   compareAndDelete(key: string, expected: string): Promise<boolean>;
 }
 
+/** @deprecated Use {@link memoryCache}. */
 export class MemoryCacheStore implements CacheStore {
   #entries = new Map<string, { value: string; expiresAt: number }>();
 
@@ -167,27 +168,35 @@ export function createCache(store: CacheStore) {
         if (!cached.ok) return cached;
         if (cached.value !== null) return ok(cached.value);
       }
+      let result: Result<T, Error>;
       try {
         const value = await fn();
         if (options.schema) {
           const validated = options.schema.safeParse(value);
-          if (!validated.success) return err(validated.error);
-        }
-        const serialized = JSON.stringify(value);
-        if (serialized === undefined) throw new TypeError("Cache values must be JSON serializable");
-        await store.set(key, serialized, ttlMs);
-        return ok(value);
-      } catch (cause) {
-        return err(asError(cause));
-      } finally {
-        if (lockToken) {
-          try {
-            await store.compareAndDelete(`${key}:__bunker_stampede`, lockToken);
-          } catch (cause) {
-            throw asError(cause);
+          if (!validated.success) result = err(validated.error);
+          else {
+            const serialized = JSON.stringify(validated.data);
+            if (serialized === undefined) throw new TypeError("Cache values must be JSON serializable");
+            await store.set(key, serialized, ttlMs);
+            result = ok(validated.data);
           }
+        } else {
+          const serialized = JSON.stringify(value);
+          if (serialized === undefined) throw new TypeError("Cache values must be JSON serializable");
+          await store.set(key, serialized, ttlMs);
+          result = ok(value);
+        }
+      } catch (cause) {
+        result = err(asError(cause));
+      }
+      if (lockToken) {
+        try {
+          await store.compareAndDelete(`${key}:__bunker_stampede`, lockToken);
+        } catch (cause) {
+          return err(asError(cause));
         }
       }
+      return result;
     },
   };
 }

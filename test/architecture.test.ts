@@ -4,6 +4,15 @@ import { dirname, extname, isAbsolute, relative, resolve, sep } from "node:path"
 
 const sourceRoot = resolve(import.meta.dir, "../src");
 const importPattern = /\b(?:from\s*|import\s*)["'](\.{1,2}\/[^"']+)["']/g;
+const allowedDependencies: Record<string, readonly string[]> = {
+  core: ["core"],
+  infra: ["core", "infra"],
+  data: ["core", "data", "http"],
+  auth: ["core", "auth", "http"],
+  http: ["core", "http", "auth", "data", "infra"],
+  ops: ["core", "http", "ops"],
+  net: ["core", "http", "infra", "net"],
+};
 
 async function sourceFiles(directory: string): Promise<string[]> {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -22,8 +31,9 @@ function resolveImport(importer: string, specifier: string): string | undefined 
 }
 
 describe("source architecture", () => {
-  it("keeps core independent and infra independent of HTTP", async () => {
+  it("enforces the documented module dependency direction", async () => {
     const files = await sourceFiles(sourceRoot);
+    const violations: string[] = [];
     for (const file of files) {
       const source = await readFile(file, "utf8");
       for (const match of source.matchAll(importPattern)) {
@@ -33,10 +43,14 @@ describe("source architecture", () => {
         if (!target) continue;
         const sourceGroup = relative(sourceRoot, file).split(sep)[0];
         const targetGroup = relative(sourceRoot, target).split(sep)[0];
-        if (sourceGroup === "core") expect(targetGroup).toBe("core");
-        if (sourceGroup === "infra") expect(targetGroup).not.toBe("http");
+        if (sourceGroup === "index") continue;
+        const allowed = allowedDependencies[sourceGroup ?? ""];
+        if (allowed && !allowed.includes(targetGroup ?? "")) {
+          violations.push(`${relative(sourceRoot, file)} imports ${relative(sourceRoot, target)}`);
+        }
       }
     }
+    expect(violations).toEqual([]);
   });
 
   it("does not import example or test code from source", async () => {

@@ -28,6 +28,7 @@ export interface JobContext {
   readonly attempt: number;
 }
 
+/** @deprecated Use {@link memoryQueue}. */
 export class MemoryQueueStore implements QueueStore {
   #jobs: QueuedJob[] = [];
   #processing = new Map<string, { job: QueuedJob; leaseUntil: number }>();

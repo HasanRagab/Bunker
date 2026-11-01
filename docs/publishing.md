@@ -22,10 +22,11 @@ Inspect the tarball before publishing:
 npm pack --dry-run
 ```
 
-The package allowlist in `package.json` includes the build, license, README,
-guides, examples, source, and migration examples. CI runs typecheck, tests,
-build, and this package-content check for each pull request to `main` or
-`master`.
+The package allowlist includes the build, license, README, and guides. It does
+not ship repository examples. Drizzle integrations are optional peer
+dependencies and are exposed only through `@2hasan2/bunker/data/drizzle`;
+consumers that do not use Drizzle do not need to install those peers. CI runs
+typecheck, tests, build, and the package-content check for each pull request.
 
 ## First publish setup
 

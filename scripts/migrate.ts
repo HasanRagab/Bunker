@@ -1,7 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { Database } from "bun:sqlite";
-import { createDrizzleDatabase, migrateDatabase } from "../src/data";
+import { createDrizzleDatabase, migrateDatabase } from "../src/data/drizzle";
 import { defineEnv } from "../src/core";
 import { z } from "zod";
 

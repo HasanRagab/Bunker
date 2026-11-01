@@ -3,8 +3,8 @@ import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import { Database } from "bun:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { Router, withDrizzleDatabase } from "../src";
-import { createDrizzleDatabase, migrateDatabase } from "../src/data";
+import { Router } from "../src/http";
+import { createDrizzleDatabase, migrateDatabase, withDrizzleDatabase } from "../src/data/drizzle";
 import { insertUserSchema, posts, schema, updateUserSchema, users } from "./db/schema";
 import { z } from "zod";
 
