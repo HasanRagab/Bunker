@@ -14,6 +14,8 @@ import {
   createLogger,
   createServiceRegistry,
   defineService,
+  defineModule,
+  startModules,
   defineJob,
   healthRoutes,
   MemoryCacheStore,
@@ -171,6 +173,54 @@ describe("Drizzle database", () => {
 });
 
 describe("router integrations", () => {
+  it("preserves module route contracts for typed clients", async () => {
+    const repositoryToken = defineService<{ find(id: string): { id: string } }>("moduleRepository");
+    const repository = { find: (id: string) => ({ id }) };
+    const users = defineModule({
+      name: "users",
+      deps: { repository: repositoryToken },
+      routes: (router, { repository: userRepository }) =>
+        router.get("/users/:id", {
+          response: z.object({ id: z.string() }),
+          handler: ({ params }) => userRepository.find(params.id),
+        }),
+    });
+    const router = users.routes(Router.create(), { repository });
+    const client = createClient("http://localhost", router, {
+      fetcher: async () => Response.json({ id: "user-1" }),
+    });
+    const response = await client.request("GET", "/users/:id", { params: { id: "user-1" } });
+    expect(response.ok).toBe(true);
+    if (response.ok) expectTypeOf(response.value).toEqualTypeOf<{ id: string }>();
+  });
+
+  it("starts modules in provider order and stops them in reverse", async () => {
+    const repositoryToken = defineService<{ find(): string }>("lifecycleRepository");
+    const calls: string[] = [];
+    const consumer = defineModule({
+      name: "consumer",
+      deps: { repository: repositoryToken },
+      routes: (router) => router,
+      onStart: ({ repository }) => { calls.push(`consumer:start:${repository.find()}`); },
+      onStop: () => { calls.push("consumer:stop"); },
+    });
+    const provider = defineModule({
+      name: "provider",
+      provides: [repositoryToken],
+      routes: (router) => router,
+      onStart: (_dependencies, registry) => {
+        calls.push("provider:start");
+        registry.provide(repositoryToken, { find: () => "ready" });
+      },
+      onStop: () => { calls.push("provider:stop"); },
+    });
+
+    const lifecycle = await startModules([consumer, provider]);
+    expect(lifecycle.order).toEqual(["provider", "consumer"]);
+    await lifecycle.stop();
+    expect(calls).toEqual(["provider:start", "consumer:start:ready", "consumer:stop", "provider:stop"]);
+  });
+
   const userSchema = z.object({ id: z.string(), active: z.boolean() });
   const api = Router.create().group("/api").get("/users/:id", {
     query: z.object({ active: z.coerce.boolean() }),

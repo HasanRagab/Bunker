@@ -1,5 +1,6 @@
 export * from "./router";
 export * from "./compose";
+export * from "./module";
 export * from "./middleware";
 export * from "./server";
 export * from "./client";
